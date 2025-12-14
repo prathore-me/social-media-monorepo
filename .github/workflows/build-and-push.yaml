@@ -34,14 +34,16 @@ jobs:
         run: |
           for SERVICE in $SERVICES; do
             IMAGE_NAME="${{ env.DOCKERHUB_USERNAME }}/$SERVICE"
-            TAGS="${IMAGE_NAME}:latest,${IMAGE_NAME}:${{ steps.commit_sha.outputs.SHA }}"
+
+            TAG_ARGS="--tag ${IMAGE_NAME}:latest --tag ${IMAGE_NAME}:${{ steps.commit_sha.outputs.SHA }}"
+            
             DOCKERFILE="apps/$SERVICE/Dockerfile"
 
             echo "--- Building $SERVICE ---"
             
             docker buildx build \
               --file "$DOCKERFILE" \
-              --tag "$TAGS" \
+              $TAG_ARGS \
               --target production \
               --platform linux/amd64 \
               --push \
