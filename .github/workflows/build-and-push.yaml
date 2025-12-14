@@ -40,12 +40,12 @@ jobs:
             echo "--- Building $SERVICE ---"
             
             docker buildx build \
-              --context . \
-              --file $DOCKERFILE \
-              --tag $TAGS \
+              --file "$DOCKERFILE" \
+              --tag "$TAGS" \
               --target production \
+              --platform linux/amd64 \
               --push \
-              --platform linux/amd64
+              .
               
             echo "Successfully pushed $IMAGE_NAME with tags latest and ${{ steps.commit_sha.outputs.SHA }}"
           done
