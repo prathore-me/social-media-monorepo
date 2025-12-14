@@ -1,0 +1,31 @@
+name: Social Media Monorepo - Build and Push Docker Images
+
+"on":
+  push:
+    branches:
+      - main
+
+env:
+  DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+  SERVICES: social-media-monorepo-auth-api social-media-monorepo-posts-api social-media-monorepo-users-api
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push Docker images
+        run: |
+          for SERVICE in ${{ env.SERVICES }}; do
+            docker build -t ${{ env.DOCKERHUB_USERNAME }}/$SERVICE:latest ./$SERVICE
+            docker push ${{ env.DOCKERHUB_USERNAME }}/$SERVICE:latest
+          done
