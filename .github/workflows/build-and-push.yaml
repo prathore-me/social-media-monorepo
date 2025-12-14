@@ -7,7 +7,8 @@ name: Social Media Monorepo - Build and Push Docker Images
 
 env:
   DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-  SERVICES: social-media-monorepo-auth-api social-media-monorepo-posts-api social-media-monorepo-users-api
+  SERVICES_DIRS: auth-api posts-api users-api
+  IMAGE_PREFIX: social-media-monorepo
 
 jobs:
   build-and-push:
@@ -32,14 +33,20 @@ jobs:
 
       - name: Build and push Docker images
         run: |
-          for SERVICE in $SERVICES; do
-            IMAGE_NAME="${{ env.DOCKERHUB_USERNAME }}/$SERVICE"
-
+          for SERVICE_DIR in $SERVICES_DIRS; do
+            
+            IMAGE_NAME="${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_PREFIX }}-$SERVICE_DIR"
+            
             TAG_ARGS="--tag ${IMAGE_NAME}:latest --tag ${IMAGE_NAME}:${{ steps.commit_sha.outputs.SHA }}"
             
-            DOCKERFILE="apps/$SERVICE/Dockerfile"
+            DOCKERFILE="apps/$SERVICE_DIR/Dockerfile"
 
-            echo "--- Building $SERVICE ---"
+            echo "--- Building $SERVICE_DIR ---"
+            
+            if [ ! -f "$DOCKERFILE" ]; then
+              echo "Error: Dockerfile not found at $DOCKERFILE"
+              exit 1
+            fi
             
             docker buildx build \
               --file "$DOCKERFILE" \
