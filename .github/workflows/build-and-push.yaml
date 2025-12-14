@@ -23,9 +23,29 @@ jobs:
           username: ${{ env.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Get current short commit SHA
+        id: commit_sha
+        run: echo "SHA=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
       - name: Build and push Docker images
         run: |
-          for SERVICE in ${{ env.SERVICES }}; do
-            docker build -t ${{ env.DOCKERHUB_USERNAME }}/$SERVICE:latest ./$SERVICE
-            docker push ${{ env.DOCKERHUB_USERNAME }}/$SERVICE:latest
+          for SERVICE in $SERVICES; do
+            IMAGE_NAME="${{ env.DOCKERHUB_USERNAME }}/$SERVICE"
+            TAGS="${IMAGE_NAME}:latest,${IMAGE_NAME}:${{ steps.commit_sha.outputs.SHA }}"
+            DOCKERFILE="apps/$SERVICE/Dockerfile"
+
+            echo "--- Building $SERVICE ---"
+            
+            docker buildx build \
+              --context . \
+              --file $DOCKERFILE \
+              --tag $TAGS \
+              --target production \
+              --push \
+              --platform linux/amd64
+              
+            echo "Successfully pushed $IMAGE_NAME with tags latest and ${{ steps.commit_sha.outputs.SHA }}"
           done
