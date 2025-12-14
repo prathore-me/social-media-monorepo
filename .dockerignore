@@ -1,0 +1,11 @@
+# .dockerignore
+# Dependencies
+node_modules
+# Build outputs
+dist
+tmp
+coverage
+# Configuration/IDE files
+.git
+.idea
+.vscode

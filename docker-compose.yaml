@@ -1,0 +1,36 @@
+services:
+  auth-api:
+    container_name: sm-auth-api
+    build:
+      context: .
+      dockerfile: apps/auth-api/Dockerfile
+      target: production
+    environment:
+      - PORT=3000
+    ports:
+      - '3000:3000'
+    restart: always
+
+  posts-api:
+    container_name: sm-posts-api-container
+    build:
+      context: .
+      dockerfile: apps/posts-api/Dockerfile
+      target: production
+    environment:
+      - PORT=3000
+    ports:
+      - '3001:3000'
+    restart: always
+
+  users-api:
+    container_name: sm-users-api-container
+    build:
+      context: .
+      dockerfile: apps/users-api/Dockerfile
+      target: production
+    environment:
+      - PORT=3000
+    ports:
+      - '3002:3000'
+    restart: always
