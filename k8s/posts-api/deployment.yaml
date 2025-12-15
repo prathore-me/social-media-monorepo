@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: posts-api-deployment
+  labels:
+    app: posts-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: posts-api
+  template:
+    metadata:
+      labels:
+        app: posts-api
+    spec:
+      containers:
+        - name: posts-api-container
+          image: prathoreme/social-media-monorepo-posts-api:latest
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 3000
+
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "250m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
