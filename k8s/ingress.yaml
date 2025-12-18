@@ -1,0 +1,32 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: social-media-monorepo-ingress
+  namespace: social-media-monorepo
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  rules:
+  - http:
+      paths:
+      - pathType: ImplementationSpecific
+        path: /auth-api(/|$)(.*)
+        backend:
+          service:
+            name: auth-api-service
+            port:
+              number: 80
+      - pathType: ImplementationSpecific
+        path: /posts-api(/|$)(.*)
+        backend:
+          service:
+            name: posts-api-service
+            port:
+              number: 80
+      - pathType: ImplementationSpecific
+        path: /users-api(/|$)(.*)
+        backend:
+          service:
+            name: users-api-service
+            port:
+              number: 80
