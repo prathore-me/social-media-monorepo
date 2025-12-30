@@ -1,24 +1,43 @@
 import { useState } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import styles from './login.module.css';
 
 export function Login() {
-  // 1. State: This is how React "remembers" what you type into the boxes
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  // 2. The function that runs when you click the button
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault(); // Prevents the browser from refreshing the page
-    console.log('Logging in with:', { email, password });
-    alert(`Trying to login with: ${email}`);
-    // Later, you will add your API call here to talk to your auth-api
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setLoading(true);
+
+    try {
+      const response = await axios.post('http://localhost:3000/api/login', {
+        email,
+        password,
+      });
+
+      localStorage.setItem('token', response.data.access_token);
+
+      console.log('Login successful:', response.data.user);
+      alert(`Welcome back, ${response.data.user.username}!`);
+
+      navigate('/');
+    } catch (error: any) {
+      console.error('Login error:', error);
+      const message = error.response?.data?.message || 'Login failed. Check your credentials.';
+      alert(message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className={styles.container}>
       <h2>Login</h2>
       <form onSubmit={handleSubmit} className={styles.form}>
-        
         <div className={styles.inputGroup}>
           <label htmlFor="email">Email:</label>
           <input
@@ -43,10 +62,9 @@ export function Login() {
           />
         </div>
 
-        <button type="submit" className={styles.loginButton}>
-          Sign In
+        <button type="submit" className={styles.loginButton} disabled={loading}>
+          {loading ? 'Signing in...' : 'Sign In'}
         </button>
-        
       </form>
       <p>
         Don't have an account? <a href="/signup">Sign up here</a>

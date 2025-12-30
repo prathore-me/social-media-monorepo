@@ -1,40 +1,56 @@
 import { useState } from 'react';
+import axios from 'axios';
+import { SignupDto } from '@social-media-monorepo/shared-dto';
 import styles from './signup.module.css';
 
 export function Signup() {
-  // State for all form fields
-  const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoding] = useState(false);
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    // Basic validation check
     if (password !== confirmPassword) {
-      alert("Passwords do not match!");
+      alert('Passwords do not match!');
       return;
     }
 
-    console.log('Registering user:', { name, email, password });
-    alert(`Account created for ${name}!`);
-    // This is where you'll eventually call your 'auth-api'
+    setLoding(true);
+
+    const signupData: SignupDto = {
+      username,
+      email,
+      password,
+    };
+
+    try {
+      const response = await axios.post('http://localhost:3000/api/signup', signupData);
+      console.log('Signup successful:', response.data);
+      alert(`Account created for ${response.data.username}!`);
+    } catch (error: any) {
+      console.error('Signup failed:', error);
+      const message = error.response?.data?.message || 'Signup failed. Please try again.';
+      alert(`Signup failed: ${Array.isArray(message) ? message.join(', ') : message}`);
+    } finally {
+      setLoding(false);
+    }
   };
 
   return (
     <div className={styles.container}>
       <h2>Create Account</h2>
       <form onSubmit={handleSubmit} className={styles.form}>
-        
         <div className={styles.inputGroup}>
-          <label htmlFor="name">Full Name:</label>
+          <label htmlFor="username">Username:</label>
           <input
             type="text"
-            id="name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="John Doe"
+            id="username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder="testuser"
             required
           />
         </div>
@@ -75,8 +91,8 @@ export function Signup() {
           />
         </div>
 
-        <button type="submit" className={styles.signupButton}>
-          Sign Up
+        <button type="submit" className={styles.signupButton} disabled={loading}>
+          {loading ? 'Creating Account...' : 'Sign Up'}
         </button>
       </form>
 
