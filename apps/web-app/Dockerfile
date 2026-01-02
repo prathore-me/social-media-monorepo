@@ -3,13 +3,13 @@ FROM node:22-alpine AS builder
 
 WORKDIR /usr/src/app
 
-ARG AUTH_API_URL
+ARG VITE_AUTH_API_URL
 
-ARG USERS_API_URL
+ARG VITE_USERS_API_URL
 
-ENV USERS_API_URL=$USERS_API_URL
+ENV VITE_AUTH_API_URL=$VITE_AUTH_API_URL
 
-ENV USERS_API_URL=$USERS_API_URL
+ENV VITE_USERS_API_URL=$VITE_USERS_API_URL
 
 COPY package.json package-lock.json nx.json tsconfig.base.json /usr/src/app/
 
@@ -36,6 +36,14 @@ CMD ["nginx", "-g", "daemon off;"]
 FROM node:22-alpine AS development
 
 WORKDIR /usr/src/app
+
+ARG VITE_AUTH_API_URL
+
+ARG VITE_USERS_API_URL
+
+ENV VITE_AUTH_API_URL=$VITE_AUTH_API_URL
+
+ENV VITE_USERS_API_URL=$VITE_USERS_API_URL
 
 COPY package.json package-lock.json nx.json tsconfig.base.json /usr/src/app/
 

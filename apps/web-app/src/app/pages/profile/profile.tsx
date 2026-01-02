@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import styles from './profile.module.css';
 
-const usersApiUrl = process.env.USERS_API_URL;
+const usersApiUrl = import.meta.env.VITE_USERS_API_URL;
 
 export function Profile() {
   const { username } = useParams();

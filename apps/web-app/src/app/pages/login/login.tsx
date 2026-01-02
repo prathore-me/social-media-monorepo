@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import styles from './login.module.css';
 
-const authApiUrl = process.env.AUTH_API_URL;
+const authApiUrl = import.meta.env.VITE_AUTH_API_URL;
 
 export function Login() {
   const [email, setEmail] = useState('');
