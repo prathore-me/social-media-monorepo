@@ -5,9 +5,11 @@ import { LoginDto, SignupDto } from '@social-media-monorepo/shared-dto';
 import { User } from '@social-media-monorepo/shared-models';
 import * as bcrypt from 'bcrypt';
 import { Model } from 'mongoose';
+import axios from 'axios';
 
 @Injectable()
 export class AppService {
+  private usersApiUrl = process.env.USERS_API_URL;
   constructor(
     @InjectModel(User.name)
     private userModel: Model<User>,
@@ -32,6 +34,10 @@ export class AppService {
       password: hashedPassword,
     });
     const savedUser = await newUser.save();
+    await axios.post(`${this.usersApiUrl}/profiles`, {
+      userId: savedUser._id,
+      username: savedUser.username,
+    });
     const result = savedUser.toObject();
     delete result.password;
     return result;

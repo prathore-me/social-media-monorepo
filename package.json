@@ -2,7 +2,10 @@
   "name": "@social-media-monorepo/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "dev:docker": "docker compose -f docker-compose.dev.yml up --build",
+    "dev:docker:down": "docker compose -f docker-compose.dev.yml down --volumes"
+  },
   "private": true,
   "devDependencies": {
     "@eslint/js": "^9.8.0",

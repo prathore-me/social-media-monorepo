@@ -1,0 +1,92 @@
+version: '3.8'
+services:
+  auth-api:
+    container_name: sm-auth-api-dev
+    build:
+      context: .
+      dockerfile: apps/auth-api/Dockerfile
+      target: development
+    environment:
+      - PORT=3000
+      - CHOKIDAR_USEPOLLING=true
+      - MONGO_URI=mongodb://mongodb:27017/social-media-monorepo-db
+      - JWT_SECRET=SUPER_SECRET_KEY
+      - USERS_API_URL=http://users-api:3000/api
+    ports:
+      - '3000:3000'
+    volumes:
+      - ./:/usr/src/app:delegated
+      - auth_api_node_modules:/usr/src/app/node_modules
+    depends_on:
+      - mongodb
+
+  posts-api:
+    container_name: sm-posts-api-dev
+    build:
+      context: .
+      dockerfile: apps/posts-api/Dockerfile
+      target: development
+    environment:
+      - PORT=3000
+      - CHOKIDAR_USEPOLLING=true
+      - MONGO_URI=mongodb://mongodb:27017/social-media-monorepo-db
+    ports:
+      - '3001:3000'
+    volumes:
+      - ./:/usr/src/app:delegated
+      - posts_api_node_modules:/usr/src/app/node_modules
+    depends_on:
+      - mongodb
+
+  users-api:
+    container_name: sm-users-api-dev
+    build:
+      context: .
+      dockerfile: apps/users-api/Dockerfile
+      target: development
+    environment:
+      - PORT=3000
+      - CHOKIDAR_USEPOLLING=true
+      - MONGO_URI=mongodb://mongodb:27017/social-media-monorepo-db
+    ports:
+      - '3002:3000'
+    volumes:
+      - ./:/usr/src/app:delegated
+      - users_api_node_modules:/usr/src/app/node_modules
+    depends_on:
+      - mongodb
+
+  web-app:
+    container_name: sm-web-app-dev
+    build:
+      context: .
+      dockerfile: apps/web-app/Dockerfile
+      target: development
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - AUTH_API_URL=http://localhost:3000/api
+      - USERS_API_URL=http://localhost:3002/api
+    ports:
+      - '5173:5173'
+    volumes:
+      - ./:/usr/src/app:delegated
+      - web_app_node_modules:/usr/src/app/node_modules
+
+  mongodb:
+    image: mongo:6
+    container_name: sm-mongodb-dev
+    restart: unless-stopped
+    volumes:
+      - mongo_data:/data/db
+    ports:
+      - '27018:27017'
+    environment:
+      # No auth for local dev by default; set MONGO_INITDB_ROOT_USERNAME and MONGO_INITDB_ROOT_PASSWORD if you want auth
+      - MONGO_INITDB_DATABASE=social-media-monorepo-db
+
+volumes:
+  auth_api_node_modules:
+  posts_api_node_modules:
+  users_api_node_modules:
+  web_app_node_modules:
+  mongo_data:

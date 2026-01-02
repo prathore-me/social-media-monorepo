@@ -3,27 +3,33 @@ FROM node:22-alpine AS builder
 
 WORKDIR /usr/src/app
 
+ARG AUTH_API_URL
+
+ARG USERS_API_URL
+
+ENV USERS_API_URL=$USERS_API_URL
+
+ENV USERS_API_URL=$USERS_API_URL
+
 COPY package.json package-lock.json nx.json tsconfig.base.json /usr/src/app/
 
 RUN npm ci
 
 COPY . /usr/src/app/
 
-RUN npx nx build auth-api --prod
+RUN npx nx build web-app --prod
 
 
 # Stage 2 : production
-FROM node:22-alpine AS production
+FROM nginx:alpine AS production
 
-WORKDIR /usr/src/app
+COPY --from=builder /usr/src/app/dist/apps/web-app /usr/share/nginx/html
 
-COPY --from=builder /usr/src/app/node_modules /usr/src/app/node_modules
+COPY apps/web-app/nginx.conf /etc/nginx/conf.d/default.conf
 
-COPY --from=builder /usr/src/app/dist/apps/auth-api /usr/src/app/dist/apps/auth-api
+EXPOSE 80
 
-EXPOSE 3000
-
-CMD ["node", "dist/apps/auth-api/main.js"]
+CMD ["nginx", "-g", "daemon off;"]
 
 
 # Development stage (for local dev with hot-reload)
@@ -37,7 +43,6 @@ RUN npm ci
 
 COPY . /usr/src/app/
 
-EXPOSE 3000
+EXPOSE 5173
 
-CMD ["sh", "-c", "npx nx serve auth-api --host 0.0.0.0 --watch"]
-
+CMD ["sh", "-c", "npx nx run web-app:dev --host 0.0.0.0 --port 5173"]

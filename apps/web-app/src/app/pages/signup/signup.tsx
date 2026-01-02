@@ -3,6 +3,8 @@ import axios from 'axios';
 import { SignupDto } from '@social-media-monorepo/shared-dto';
 import styles from './signup.module.css';
 
+const authApiUrl = process.env.AUTH_API_URL;
+
 export function Signup() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -27,7 +29,7 @@ export function Signup() {
     };
 
     try {
-      const response = await axios.post('http://localhost:3000/api/signup', signupData);
+      const response = await axios.post(`${authApiUrl}/signup`, signupData);
       console.log('Signup successful:', response.data);
       alert(`Account created for ${response.data.username}!`);
     } catch (error: any) {

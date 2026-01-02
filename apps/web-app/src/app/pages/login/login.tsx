@@ -3,6 +3,8 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import styles from './login.module.css';
 
+const authApiUrl = process.env.AUTH_API_URL;
+
 export function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -14,7 +16,7 @@ export function Login() {
     setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:3000/api/login', {
+      const response = await axios.post(`${authApiUrl}/login`, {
         email,
         password,
       });
@@ -24,7 +26,7 @@ export function Login() {
       console.log('Login successful:', response.data.user);
       alert(`Welcome back, ${response.data.user.username}!`);
 
-      navigate('/');
+      navigate('/profile/' + response.data.user.username);
     } catch (error: any) {
       console.error('Login error:', error);
       const message = error.response?.data?.message || 'Login failed. Check your credentials.';
