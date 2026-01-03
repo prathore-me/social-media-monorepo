@@ -68,6 +68,7 @@ jobs:
         with:
           context: .
           file: ${{ matrix.dockerfile }}
+          target: production
           push: true
           platforms: linux/amd64
           tags: |
