@@ -1,4 +1,4 @@
-name: Social Media Monorepo - Build and push Docker images
+name: Build and push Docker images
 
 on:
   push:
