@@ -15,18 +15,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
       - name: Run semantic-release
-        uses: semantic-release/semantic-release@v20
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          extra_plugins: |
-            - "@semantic-release/commit-analyzer"
-            - "@semantic-release/release-notes-generator"
-            - "@semantic-release/changelog"
-            - "@semantic-release/github"
-          config: |
-            {
-              "tagFormat": "v${version}",
-              "branches": ["main"]
-            }
+        run: npx semantic-release
