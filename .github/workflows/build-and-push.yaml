@@ -22,6 +22,11 @@ concurrency:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    env:
+      MONGO_URI: ${{ secrets.MONGO_URI }}
+      USERS_API_URL: ${{ secrets.USERS_API_URL }}
+      VITE_AUTH_API_URL: ${{ secrets.VITE_AUTH_API_URL }}
+      VITE_USERS_API_URL: ${{ secrets.VITE_USERS_API_URL }}
     strategy:
       fail-fast: false
       matrix:
