@@ -71,17 +71,14 @@ jobs:
           push: true
           platforms: linux/amd64
           tags: |
-            docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:latest
             docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:${{ steps.sha.outputs.SHORT_SHA }}
           build-args: |
             MONGO_URI=${{ env.MONGO_URI }}
             USERS_API_URL=${{ env.USERS_API_URL }}
             VITE_AUTH_API_URL=${{ env.VITE_AUTH_API_URL }}
             VITE_USERS_API_URL=${{ env.VITE_USERS_API_URL }}
-          cache-from: type=registry,ref=docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:buildcache
-          cache-to: type=registry,mode=max,ref=docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:buildcache
 
       - name: Image push summary
         if: ${{ always() }}
         run: |
-          echo "Service: ${{ matrix.service }} - pushed tags: latest, ${{ steps.sha.outputs.SHORT_SHA }}"
+          echo "Service: ${{ matrix.service }} - pushed tags: ${{ steps.sha.outputs.SHORT_SHA }}"
