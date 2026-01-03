@@ -44,6 +44,7 @@ export class AppService {
   }
 
   async login(loginDto: LoginDto) {
+    console.log('testing');
     const user = await this.userModel.findOne({ email: loginDto.email });
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
