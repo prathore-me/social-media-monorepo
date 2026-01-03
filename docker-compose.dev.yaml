@@ -8,7 +8,7 @@ services:
     ports:
       - '27018:27017'
     environment:
-      - MONGO_INITDB_DATABASE=social-media-monorepo-db
+      - MONGO_INITDB_DATABASE=${MONGO_INITDB_DATABASE}
 
   auth-api:
     container_name: sm-auth-api-dev
@@ -18,10 +18,9 @@ services:
       target: development
     environment:
       - PORT=3000
-      - CHOKIDAR_USEPOLLING=true
-      - MONGO_URI=mongodb://mongodb:27017/social-media-monorepo-db
-      - JWT_SECRET=SUPER_SECRET_KEY
-      - USERS_API_URL=http://users-api:3000/api
+      - MONGO_URI=${MONGO_URI}
+      - JWT_SECRET=${JWT_SECRET}
+      - USERS_API_URL=${USERS_API_URL}
     ports:
       - '3000:3000'
     volumes:
@@ -38,8 +37,7 @@ services:
       target: development
     environment:
       - PORT=3000
-      - CHOKIDAR_USEPOLLING=true
-      - MONGO_URI=mongodb://mongodb:27017/social-media-monorepo-db
+      - MONGO_URI=${MONGO_URI}
     ports:
       - '3001:3000'
     volumes:
@@ -56,8 +54,7 @@ services:
       target: development
     environment:
       - PORT=3000
-      - CHOKIDAR_USEPOLLING=true
-      - MONGO_URI=mongodb://mongodb:27017/social-media-monorepo-db
+      - MONGO_URI=${MONGO_URI}
     ports:
       - '3002:3000'
     volumes:
@@ -73,8 +70,8 @@ services:
       dockerfile: apps/web-app/Dockerfile
       target: development
       args:
-        - VITE_AUTH_API_URL=http://localhost:3000/api
-        - VITE_USERS_API_URL=http://localhost:3002/api
+        - VITE_AUTH_API_URL=${VITE_AUTH_API_URL}
+        - VITE_USERS_API_URL=${VITE_USERS_API_URL}
     environment:
       - CHOKIDAR_USEPOLLING=true
     ports:
