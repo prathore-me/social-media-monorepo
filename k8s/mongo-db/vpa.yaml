@@ -1,12 +1,12 @@
 apiVersion: autoscaling.k8s.io/v1
 kind: VerticalPodAutoscaler
 metadata:
-  name: posts-api-vpa
+  name: mongo-db-vpa
   namespace: social-media-monorepo
 spec:
   targetRef:
-    apiVersion: "apps/v1"
+    apiVersion: 'apps/v1'
     kind: Deployment
-    name: posts-api-deployment
+    name: mongo-db-deployment
   updatePolicy:
-    updateMode: "Auto"
+    updateMode: 'Auto'

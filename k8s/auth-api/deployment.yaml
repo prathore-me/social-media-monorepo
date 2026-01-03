@@ -19,16 +19,21 @@ spec:
         - name: auth-api-container
           image: prathoreme/social-media-monorepo-auth-api:latest
           imagePullPolicy: Always
+          envFrom:
+            - secretRef:
+                name: social-media-monorepo-secrets
+            - configMapRef:
+                name: social-media-monorepo-configmap
           ports:
-          - containerPort: 3000
+            - containerPort: 3000
           livenessProbe:
             httpGet:
               path: /auth-api/api
               port: 3000
           resources:
             requests:
-              memory: "64Mi"
-              cpu: "100m"
+              memory: '128Mi'
+              cpu: '100m'
             limits:
-              memory: "128Mi"
-              cpu: "200m"
+              memory: '256Mi'
+              cpu: '500m'

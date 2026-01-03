@@ -13,7 +13,7 @@ RUN npx nx build users-api --prod
 
 
 # Stage 2 : production
-FROM node:22-alpine AS production
+FROM node:22-slim AS production
 
 WORKDIR /usr/src/app
 

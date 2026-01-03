@@ -1,31 +1,26 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: users-api-deployment
+  name: web-app-deployment
   namespace: social-media-monorepo
   labels:
-    app: users-api
+    app: web-app
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: users-api
+      app: web-app
   template:
     metadata:
       labels:
-        app: users-api
+        app: web-app
     spec:
       containers:
-        - name: users-api-container
-          image: prathoreme/social-media-monorepo-users-api:latest
+        - name: web-app
+          image: prathoreme/social-media-monorepo-web-app:latest
           imagePullPolicy: Always
-          envFrom:
-            - secretRef:
-                name: social-media-monorepo-secrets
-            - configMapRef:
-                name: social-media-monorepo-configmap
           ports:
-            - containerPort: 3000
+            - containerPort: 80
           resources:
             requests:
               memory: '128Mi'
