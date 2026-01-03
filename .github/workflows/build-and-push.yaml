@@ -33,22 +33,12 @@ jobs:
         include:
           - service: auth-api
             dockerfile: apps/auth-api/Dockerfile
-            build_args: |
-              MONGO_URI=${{ secrets.MONGO_URI }}
-              USERS_API_URL=${{ secrets.USERS_API_URL }}
           - service: posts-api
             dockerfile: apps/posts-api/Dockerfile
-            build_args: |
-              MONGO_URI=${{ secrets.MONGO_URI }}
           - service: users-api
             dockerfile: apps/users-api/Dockerfile
-            build_args: |
-              MONGO_URI=${{ secrets.MONGO_URI }}
           - service: web-app
             dockerfile: apps/web-app/Dockerfile
-            build_args: |
-              VITE_AUTH_API_URL=${{ secrets.VITE_AUTH_API_URL }}
-              VITE_USERS_API_URL=${{ secrets.VITE_USERS_API_URL }}
 
     steps:
       - name: Checkout
@@ -83,7 +73,11 @@ jobs:
           tags: |
             docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:latest
             docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:${{ steps.sha.outputs.SHORT_SHA }}
-          build-args: ${{ matrix.build_args }}
+          build-args: |
+            MONGO_URI=${{ env.MONGO_URI }}
+            USERS_API_URL=${{ env.USERS_API_URL }}
+            VITE_AUTH_API_URL=${{ env.VITE_AUTH_API_URL }}
+            VITE_USERS_API_URL=${{ env.VITE_USERS_API_URL }}
           cache-from: type=registry,ref=docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:buildcache
           cache-to: type=registry,mode=max,ref=docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:buildcache
 
