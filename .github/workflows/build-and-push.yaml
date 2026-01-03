@@ -1,60 +1,88 @@
-name: Social Media Monorepo - Build and Push Docker Images
+name: Social Media Monorepo - Build and push Docker images
 
-"on":
+on:
   push:
-    branches:
-      - main
+    branches: [main]
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
 
 env:
-  DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-  SERVICES_DIRS: auth-api posts-api users-api
   IMAGE_PREFIX: social-media-monorepo
+  SERVICES: auth-api posts-api users-api web-app
+
+concurrency:
+  group: build-and-push-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - service: auth-api
+            dockerfile: apps/auth-api/Dockerfile
+            build_args: |
+              MONGO_URI=${{ secrets.MONGO_URI }}
+              USERS_API_URL=${{ secrets.USERS_API_URL }}
+          - service: posts-api
+            dockerfile: apps/posts-api/Dockerfile
+            build_args: |
+              MONGO_URI=${{ secrets.MONGO_URI }}
+          - service: users-api
+            dockerfile: apps/users-api/Dockerfile
+            build_args: |
+              MONGO_URI=${{ secrets.MONGO_URI }}
+          - service: web-app
+            dockerfile: apps/web-app/Dockerfile
+            build_args: |
+              VITE_AUTH_API_URL=${{ secrets.VITE_AUTH_API_URL }}
+              VITE_USERS_API_URL=${{ secrets.VITE_USERS_API_URL }}
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
         with:
-          username: ${{ env.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Get current short commit SHA
-        id: commit_sha
-        run: echo "SHA=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          registry: docker.io
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push Docker images
+      - name: Short SHA
+        id: sha
+        run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+
+      - name: Build and push image (service = ${{ matrix.service }})
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          push: true
+          platforms: linux/amd64
+          tags: |
+            docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:latest
+            docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:${{ steps.sha.outputs.SHORT_SHA }}
+          build-args: ${{ matrix.build_args }}
+          cache-from: type=registry,ref=docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:buildcache
+          cache-to: type=registry,mode=max,ref=docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:buildcache
+
+      - name: Image push summary
+        if: ${{ always() }}
         run: |
-          for SERVICE_DIR in $SERVICES_DIRS; do
-            
-            IMAGE_NAME="${{ env.DOCKERHUB_USERNAME }}/${{ env.IMAGE_PREFIX }}-$SERVICE_DIR"
-            
-            TAG_ARGS="--tag ${IMAGE_NAME}:latest --tag ${IMAGE_NAME}:${{ steps.commit_sha.outputs.SHA }}"
-            
-            DOCKERFILE="apps/$SERVICE_DIR/Dockerfile"
-
-            echo "--- Building $SERVICE_DIR ---"
-            
-            if [ ! -f "$DOCKERFILE" ]; then
-              echo "Error: Dockerfile not found at $DOCKERFILE"
-              exit 1
-            fi
-            
-            docker buildx build \
-              --file "$DOCKERFILE" \
-              $TAG_ARGS \
-              --target production \
-              --platform linux/amd64 \
-              --push \
-              .
-              
-            echo "Successfully pushed $IMAGE_NAME with tags latest and ${{ steps.commit_sha.outputs.SHA }}"
-          done
+          echo "Service: ${{ matrix.service }} - pushed tags: latest, ${{ steps.sha.outputs.SHORT_SHA }}"
