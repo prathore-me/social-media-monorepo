@@ -2,7 +2,6 @@ name: Build and push Docker images
 
 on:
   push:
-    branches: [main]
     tags:
       - 'v*.*.*'
   workflow_dispatch:
@@ -59,9 +58,9 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Short SHA
-        id: sha
-        run: echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+      - name: Get Tag
+        id: vars
+        run: echo "tag=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
 
       - name: Build and push image (service = ${{ matrix.service }})
         uses: docker/build-push-action@v4
@@ -72,7 +71,7 @@ jobs:
           push: true
           platforms: linux/amd64
           tags: |
-            docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:${{ steps.sha.outputs.SHORT_SHA }}
+            docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:${{ steps.vars.outputs.tag }}
             docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:latest
           build-args: |
             MONGO_URI=${{ env.MONGO_URI }}
@@ -83,4 +82,4 @@ jobs:
       - name: Image push summary
         if: ${{ always() }}
         run: |
-          echo "Service: ${{ matrix.service }} - pushed tags: ${{ steps.sha.outputs.SHORT_SHA }}"
+          echo "Service: ${{ matrix.service }} - pushed tags: ${{ steps.vars.outputs.tag }}"
