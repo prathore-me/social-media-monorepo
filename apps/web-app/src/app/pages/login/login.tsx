@@ -2,8 +2,7 @@ import { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import styles from './login.module.css';
-
-const authApiUrl = import.meta.env.VITE_AUTH_API_URL;
+import { AUTH_API_URL } from '../../../config/api';
 
 export function Login() {
   const [email, setEmail] = useState('');
@@ -16,7 +15,7 @@ export function Login() {
     setLoading(true);
 
     try {
-      const response = await axios.post(`${authApiUrl}/login`, {
+      const response = await axios.post(`${AUTH_API_URL}/login`, {
         email,
         password,
       });

@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import styles from './profile.module.css';
-
-const usersApiUrl = import.meta.env.VITE_USERS_API_URL;
+import { USERS_API_URL } from '../../../config/api';
 
 export function Profile() {
   const { username } = useParams();
@@ -14,7 +13,7 @@ export function Profile() {
     const fetchProfileData = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get(`${usersApiUrl}/profiles/${username}`, {
+        const response = await axios.get(`${USERS_API_URL}/profiles/${username}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setProfile(response.data);
