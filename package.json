@@ -4,9 +4,9 @@
   "license": "MIT",
   "scripts": {
     "dev:docker": "docker compose --env-file .env.local -f docker-compose.dev.yaml up --build",
-    "prod:docker": "docker compose -f docker-compose.yaml up --build",
+    "prod:docker": "docker compose --env-file .env.local -f docker-compose.yaml up --build",
     "dev:docker:down": "docker compose --env-file .env.local -f docker-compose.dev.yaml down --volumes",
-    "prod:docker:down": "docker compose -f docker-compose.yaml down --volumes"
+    "prod:docker:down": "docker compose --env-file .env.local -f docker-compose.yaml down --volumes"
   },
   "private": true,
   "devDependencies": {
