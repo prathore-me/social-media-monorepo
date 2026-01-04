@@ -4,6 +4,4 @@ metadata:
   name: social-media-monorepo-configmap
   namespace: social-media-monorepo
 data:
-  AUTH_API_URL: 'http://auth-api:3000/api'
-  USERS_API_URL: 'http://users-api:3000/api'
-  POSTS_API_URL: 'http://posts-api:3000/api'
+  PORT: '3000'

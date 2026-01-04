@@ -17,10 +17,6 @@ FROM node:22-slim AS production
 
 WORKDIR /usr/src/app
 
-ARG MONGO_URI
-
-ENV MONGO_URI=$MONGO_URI
-
 COPY --from=builder /usr/src/app/node_modules /usr/src/app/node_modules
 
 COPY --from=builder /usr/src/app/dist/apps/posts-api /usr/src/app/dist/apps/posts-api

@@ -1,12 +1,10 @@
 services:
   mongodb:
     image: mongo:6
-    container_name: sm-mongodb-dev
+    container_name: sm-mongodb-container
     restart: unless-stopped
     volumes:
       - mongo_data:/data/db
-    ports:
-      - '27018:27017'
     environment:
       - MONGO_INITDB_DATABASE=${MONGO_INITDB_DATABASE}
 

@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: web-app
-          image: prathoreme/social-media-monorepo-web-app:latest
+          image: prathoreme/social-media-monorepo-web-app:v0.2.0
           imagePullPolicy: Always
           ports:
             - containerPort: 80

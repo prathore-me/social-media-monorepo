@@ -17,14 +17,6 @@ FROM node:22-slim AS production
 
 WORKDIR /usr/src/app
 
-ARG MONGO_URI
-
-ARG USERS_API_URL
-
-ENV MONGO_URI=$MONGO_URI
-
-ENV USERS_API_URL=$USERS_API_URL
-
 COPY --from=builder /usr/src/app/node_modules /usr/src/app/node_modules
 
 COPY --from=builder /usr/src/app/dist/apps/auth-api /usr/src/app/dist/apps/auth-api
