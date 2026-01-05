@@ -16,9 +16,20 @@ spec:
         app: web-app
     spec:
       containers:
-        - name: web-app
-          image: prathoreme/social-media-monorepo-web-app:v0.2.0
+        - name: web-app-container
+          image: prathoreme/social-media-monorepo-web-app:v0.2.4
           imagePullPolicy: Always
+          env:
+            - name: VITE_AUTH_API_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: social-media-monorepo-configmap
+                  key: VITE_AUTH_API_URL
+            - name: VITE_USERS_API_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: social-media-monorepo-configmap
+                  key: VITE_USERS_API_URL
           ports:
             - containerPort: 80
           resources:

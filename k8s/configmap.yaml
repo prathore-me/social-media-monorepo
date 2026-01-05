@@ -5,3 +5,6 @@ metadata:
   namespace: social-media-monorepo
 data:
   PORT: '3000'
+  USERS_API_URL: 'http://users-api-service:80/api'
+  VITE_AUTH_API_URL: 'http://localhost/auth-api/api'
+  VITE_USERS_API_URL: 'http://localhost/users-api/api'

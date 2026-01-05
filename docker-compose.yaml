@@ -10,7 +10,7 @@ services:
 
   auth-api:
     container_name: sm-auth-api-container
-    image: prathoreme/social-media-monorepo-auth-api:v0.2.3
+    image: prathoreme/social-media-monorepo-auth-api:v0.2.4
     environment:
       - PORT=3000
       - MONGO_URI=${MONGO_URI}
@@ -24,7 +24,7 @@ services:
 
   posts-api:
     container_name: sm-posts-api-container
-    image: prathoreme/social-media-monorepo-posts-api:v0.2.3
+    image: prathoreme/social-media-monorepo-posts-api:v0.2.4
     environment:
       - PORT=3000
       - MONGO_URI=${MONGO_URI}
@@ -34,7 +34,7 @@ services:
 
   users-api:
     container_name: sm-users-api-container
-    image: prathoreme/social-media-monorepo-users-api:v0.2.3
+    image: prathoreme/social-media-monorepo-users-api:v0.2.4
     environment:
       - PORT=3000
       - MONGO_URI=${MONGO_URI}
@@ -46,7 +46,7 @@ services:
 
   web-app:
     container_name: sm-web-app-container
-    image: prathoreme/social-media-monorepo-web-app:v0.2.3
+    image: prathoreme/social-media-monorepo-web-app:v0.2.4
     environment:
       - VITE_AUTH_API_URL=${VITE_AUTH_API_URL}
       - VITE_USERS_API_URL=${VITE_USERS_API_URL}
