@@ -45,9 +45,6 @@ jobs:
   build-and-push:
     needs: tag-and-release
     runs-on: ubuntu-latest
-    env:
-      VITE_AUTH_API_URL: ${{ secrets.VITE_AUTH_API_URL }}
-      VITE_USERS_API_URL: ${{ secrets.VITE_USERS_API_URL }}
     strategy:
       fail-fast: false
       matrix:
@@ -91,9 +88,6 @@ jobs:
           tags: |
             docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:${{ needs.tag-and-release.outputs.new_tag }}
             docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:latest
-          build-args: |
-            VITE_AUTH_API_URL=${{ env.VITE_AUTH_API_URL }}
-            VITE_USERS_API_URL=${{ env.VITE_USERS_API_URL }}
 
       - name: Image push summary
         if: ${{ always() }}
