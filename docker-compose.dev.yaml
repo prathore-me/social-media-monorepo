@@ -1,3 +1,4 @@
+name: social-media-monorepo-dev
 services:
   mongodb:
     image: mongo:6
@@ -9,7 +10,7 @@ services:
       - MONGO_INITDB_DATABASE=${MONGO_INITDB_DATABASE}
 
   auth-api:
-    container_name: sm-auth-api-dev
+    container_name: sm-auth-api-container
     build:
       context: .
       dockerfile: apps/auth-api/Dockerfile
@@ -28,7 +29,7 @@ services:
       - mongodb
 
   posts-api:
-    container_name: sm-posts-api-dev
+    container_name: sm-posts-api-container
     build:
       context: .
       dockerfile: apps/posts-api/Dockerfile
@@ -45,7 +46,7 @@ services:
       - mongodb
 
   users-api:
-    container_name: sm-users-api-dev
+    container_name: sm-users-api-container
     build:
       context: .
       dockerfile: apps/users-api/Dockerfile
@@ -62,7 +63,7 @@ services:
       - mongodb
 
   web-app:
-    container_name: sm-web-app-dev
+    container_name: sm-web-app-container
     build:
       context: .
       dockerfile: apps/web-app/Dockerfile

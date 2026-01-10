@@ -1,3 +1,4 @@
+name: social-media-monorepo-prod
 services:
   mongodb:
     image: mongo:6

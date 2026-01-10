@@ -1,6 +1,7 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards, Request } from '@nestjs/common';
 import { AppService } from './app.service';
 import { LoginDto, SignupDto } from '@social-media-monorepo/shared-dto';
+import { JwtAuthGuard } from './jwt-auth.guard';
 
 @Controller()
 export class AppController {
@@ -19,5 +20,11 @@ export class AppController {
   @Post('login')
   async login(@Body() loginDto: LoginDto) {
     return this.appService.login(loginDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('me')
+  getMe(@Request() req) {
+    return req.user;
   }
 }

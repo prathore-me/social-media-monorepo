@@ -51,7 +51,7 @@ export class AppService {
     const passwordValid = await bcrypt.compare(loginDto.password, user.password);
 
     if (user && passwordValid) {
-      const payload = { email: user.email, sub: user._id };
+      const payload = { email: user.email, sub: user._id, username: user.username };
       return {
         access_token: this.jwtService.sign(payload),
         user: { id: user._id, username: user.username, email: user.email },
