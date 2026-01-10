@@ -11,7 +11,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { AppService } from './app.service';
-import { Profile } from '@social-media-monorepo/shared-models';
+import { Profile } from '@social-media-monorepo/shared-schemas';
 import { JwtAuthGuard } from '@social-media-monorepo/shared-auth-utils';
 
 @Controller()

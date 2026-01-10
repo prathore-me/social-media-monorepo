@@ -1,7 +1,7 @@
-# shared-dto
+# schemas
 
 This library was generated with [Nx](https://nx.dev).
 
 ## Building
 
-Run `nx build shared-dto` to build the library.
+Run `nx build schemas` to build the library.

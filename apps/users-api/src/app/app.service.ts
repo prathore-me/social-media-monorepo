@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Profile } from '@social-media-monorepo/shared-models';
+import { Profile } from '@social-media-monorepo/shared-schemas';
 import { Model } from 'mongoose';
 
 @Injectable()

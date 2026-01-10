@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Profile, ProfileSchema } from '@social-media-monorepo/shared-models';
+import { Profile, ProfileSchema } from '@social-media-monorepo/shared-schemas';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy, JwtAuthGuard } from '@social-media-monorepo/shared-auth-utils';

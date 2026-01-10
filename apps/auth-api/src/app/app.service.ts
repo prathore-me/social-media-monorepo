@@ -2,7 +2,7 @@ import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/co
 import { InjectModel } from '@nestjs/mongoose';
 import { JwtService } from '@nestjs/jwt';
 import { LoginDto, SignupDto } from '@social-media-monorepo/shared-dto';
-import { User } from '@social-media-monorepo/shared-models';
+import { User } from '@social-media-monorepo/shared-schemas';
 import * as bcrypt from 'bcrypt';
 import { Model } from 'mongoose';
 import axios from 'axios';
