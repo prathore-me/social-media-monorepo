@@ -1,6 +1,18 @@
-import { Body, Controller, Get, Param, Post, Patch, NotFoundException } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Patch,
+  NotFoundException,
+  UseGuards,
+  Request,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { AppService } from './app.service';
 import { Profile } from '@social-media-monorepo/shared-models';
+import { JwtAuthGuard } from '@social-media-monorepo/shared-auth-utils';
 
 @Controller()
 export class AppController {
@@ -25,8 +37,16 @@ export class AppController {
     return profile;
   }
 
+  @UseGuards(JwtAuthGuard)
   @Patch('profiles/:userId')
-  async updateProfile(@Param('userId') userId: string, @Body() data: Partial<Profile>) {
+  async updateProfile(
+    @Param('userId') userId: string,
+    @Body() data: Partial<Profile>,
+    @Request() req,
+  ) {
+    if (req.user.userId !== userId) {
+      throw new UnauthorizedException('You can only edit your own profile');
+    }
     return this.appService.updateProfile(userId, data);
   }
 }

@@ -1,56 +1,42 @@
-import { useState, useEffect } from 'react';
-import { Route, Routes, Navigate, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import Login from './pages/login/login';
-import Signup from './pages/signup/signup';
-import Profile from './pages/profile/profile';
-import { AUTH_API_URL } from '../config/api';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import Navbar from '../components/Navbar';
+import Login from '../pages/Login';
+import Signup from '../pages/Signup';
+import Profile from '../pages/Profile';
+import EditProfile from '../pages/EditProfile';
 
-export function App() {
-  const [user, setUser] = useState<{ username: string } | null>(null);
-  const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
+const Feed = () => <div className="text-center mt-10">Welcome to your Feed!</div>;
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        setLoading(false);
-        return;
-      }
-      try {
-        const response = await axios.get(`${AUTH_API_URL}/me`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setUser(response.data);
-        if (window.location.pathname === '/') {
-          navigate(`/profile/${response.data.username}`);
-        }
-      } catch (error) {
-        console.error('Authentication check failed', error);
-        localStorage.removeItem('token');
-      } finally {
-        setLoading(false);
-      }
-    };
-    checkAuth();
-  }, [navigate]);
+export default function App() {
+  const { user, loading } = useAuth();
 
-  if (loading) return <div>Loading...</div>;
+  if (loading)
+    return (
+      <div className="h-screen flex items-center justify-center font-serif text-2xl">
+        Instagram...
+      </div>
+    );
 
   return (
-    <Routes>
-      <Route path="/signup" element={<Signup />} />
-      <Route path="/login" element={<Login />} />
+    <div className="min-h-screen bg-gray-50">
+      {user && <Navbar />}
 
-      <Route path="/profile/:username" element={user ? <Profile /> : <Navigate to="/login" />} />
+      <main className={user ? 'pt-20 px-4' : ''}>
+        <Routes>
+          <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
+          <Route path="/signup" element={!user ? <Signup /> : <Navigate to="/" />} />
 
-      <Route
-        path="/"
-        element={user ? <Navigate to={`/profile/${user.username}`} /> : <Navigate to="/signup" />}
-      />
-    </Routes>
+          <Route path="/" element={user ? <Feed /> : <Navigate to="/login" />} />
+          <Route
+            path="/profile/:username"
+            element={user ? <Profile /> : <Navigate to="/login" />}
+          />
+          <Route path="/edit-profile" element={<EditProfile />} />
+
+          <Route path="*" element={<Navigate to={user ? '/' : '/login'} />} />
+        </Routes>
+      </main>
+    </div>
   );
 }
-
-export default App;

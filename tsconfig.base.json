@@ -16,6 +16,7 @@
     "baseUrl": ".",
     "strictPropertyInitialization": false,
     "paths": {
+      "@social-media-monorepo/shared-auth-utils": ["libs/shared/auth-utils/src/index.ts"],
       "@social-media-monorepo/shared-dto": ["shared-dto/src/index.ts"],
       "@social-media-monorepo/shared-models": ["shared-models/src/index.ts"]
     }

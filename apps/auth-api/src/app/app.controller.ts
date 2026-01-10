@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Post, UseGuards, Request } from '@nestjs/common';
 import { AppService } from './app.service';
 import { LoginDto, SignupDto } from '@social-media-monorepo/shared-dto';
-import { JwtAuthGuard } from './jwt-auth.guard';
+import { JwtAuthGuard } from '@social-media-monorepo/shared-auth-utils';
 
 @Controller()
 export class AppController {
