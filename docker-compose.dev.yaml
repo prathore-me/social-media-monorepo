@@ -23,7 +23,11 @@ services:
     ports:
       - '3000:3000'
     volumes:
-      - ./:/usr/src/app:delegated
+      - ./apps/auth-api:/usr/src/app/apps/auth-api:delegated
+      - ./libs:/usr/src/app/libs:delegated
+      - ./package.json:/usr/src/app/package.json:delegated
+      - ./nx.json:/usr/src/app/nx.json:delegated
+      - ./tsconfig.base.json:/usr/src/app/tsconfig.base.json:delegated
       - auth_api_node_modules:/usr/src/app/node_modules
     depends_on:
       - mongodb
@@ -40,7 +44,11 @@ services:
     ports:
       - '3001:3000'
     volumes:
-      - ./:/usr/src/app:delegated
+      - ./apps/posts-api:/usr/src/app/apps/posts-api:delegated
+      - ./libs:/usr/src/app/libs:delegated
+      - ./package.json:/usr/src/app/package.json:delegated
+      - ./nx.json:/usr/src/app/nx.json:delegated
+      - ./tsconfig.base.json:/usr/src/app/tsconfig.base.json:delegated
       - posts_api_node_modules:/usr/src/app/node_modules
     depends_on:
       - mongodb
@@ -57,7 +65,11 @@ services:
     ports:
       - '3002:3000'
     volumes:
-      - ./:/usr/src/app:delegated
+      - ./apps/users-api:/usr/src/app/apps/users-api:delegated
+      - ./libs:/usr/src/app/libs:delegated
+      - ./package.json:/usr/src/app/package.json:delegated
+      - ./nx.json:/usr/src/app/nx.json:delegated
+      - ./tsconfig.base.json:/usr/src/app/tsconfig.base.json:delegated
       - users_api_node_modules:/usr/src/app/node_modules
     depends_on:
       - mongodb
@@ -74,7 +86,11 @@ services:
     ports:
       - '5173:5173'
     volumes:
-      - ./:/usr/src/app:delegated
+      - ./apps/web-app:/usr/src/app/apps/web-app:delegated
+      - ./libs:/usr/src/app/libs:delegated
+      - ./package.json:/usr/src/app/package.json:delegated
+      - ./nx.json:/usr/src/app/nx.json:delegated
+      - ./tsconfig.base.json:/usr/src/app/tsconfig.base.json:delegated
       - web_app_node_modules:/usr/src/app/node_modules
 
 volumes:
