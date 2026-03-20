@@ -4,22 +4,22 @@ import { Document } from 'mongoose';
 @Schema({ timestamps: true })
 export class Profile extends Document {
   @Prop({ required: true, unique: true })
-  userId: string; // This matches the _id from auth-api
+  userId: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, unique: true })
   username: string;
 
-  @Prop()
-  firstName: string;
-
-  @Prop()
-  lastName: string;
-
-  @Prop()
+  @Prop({ default: '' })
   bio: string;
 
-  @Prop()
-  profilePic: string; // URL string
+  @Prop({ default: '' })
+  profilePic: string;
+
+  @Prop({ type: [String], default: [] })
+  followers: string[];
+
+  @Prop({ type: [String], default: [] })
+  following: string[];
 }
 
 export const ProfileSchema = SchemaFactory.createForClass(Profile);
