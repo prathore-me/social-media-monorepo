@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: media-api-deployment
+  namespace: social-media-monorepo
+  labels:
+    app: media-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: media-api
+  template:
+    metadata:
+      labels:
+        app: media-api
+    spec:
+      containers:
+        - name: media-api-container
+          image: prathoreme/social-media-monorepo-media-api:latest
+          imagePullPolicy: Always
+          envFrom:
+            - secretRef:
+                name: social-media-monorepo-secrets
+            - configMapRef:
+                name: social-media-monorepo-configmap
+          ports:
+            - containerPort: 3000
+          resources:
+            requests:
+              memory: '128Mi'
+              cpu: '100m'
+            limits:
+              memory: '256Mi'
+              cpu: '500m'

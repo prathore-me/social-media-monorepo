@@ -9,6 +9,39 @@ services:
     environment:
       - MONGO_INITDB_DATABASE=${MONGO_INITDB_DATABASE}
 
+  minio:
+    image: minio/minio:latest
+    container_name: sm-minio-container
+    command: server /data --console-address ":9001"
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    volumes:
+      - minio_data:/data
+    restart: always
+
+  minio-init:
+    image: minio/mc:latest
+    container_name: sm-minio-init-container
+    depends_on:
+      - minio
+    restart: on-failure
+    entrypoint: >
+      /bin/sh -c "
+      sleep 5;
+      mc alias set local http://minio:9000 $${MINIO_ROOT_USER} $${MINIO_ROOT_PASSWORD};
+      mc mb --ignore-existing local/posts-images;
+      mc mb --ignore-existing local/profile-pictures;
+      mc mb --ignore-existing local/videos;
+      mc anonymous set public local/posts-images;
+      mc anonymous set public local/profile-pictures;
+      mc anonymous set public local/videos;
+      echo 'MinIO buckets ready';
+      "
+
   auth-api:
     container_name: sm-auth-api-container
     image: prathoreme/social-media-monorepo-auth-api:latest
@@ -52,6 +85,24 @@ services:
       - '3002:3000'
     restart: always
 
+  media-api:
+    container_name: sm-media-api-container
+    image: prathoreme/social-media-monorepo-media-api:latest
+    pull_policy: always
+    environment:
+      - PORT=3000
+      - JWT_SECRET=${JWT_SECRET}
+      - MINIO_ENDPOINT=minio
+      - MINIO_PORT=9000
+      - MINIO_USE_SSL=false
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+    depends_on:
+      - minio
+    ports:
+      - '3003:3000'
+    restart: always
+
   web-app:
     container_name: sm-web-app-container
     image: prathoreme/social-media-monorepo-web-app:latest
@@ -60,13 +111,16 @@ services:
       - VITE_AUTH_API_URL=${VITE_AUTH_API_URL}
       - VITE_USERS_API_URL=${VITE_USERS_API_URL}
       - VITE_POSTS_API_URL=${VITE_POSTS_API_URL}
+      - VITE_MEDIA_API_URL=${VITE_MEDIA_API_URL}
     depends_on:
       - auth-api
       - posts-api
       - users-api
+      - media-api
     ports:
       - '80:80'
     restart: always
 
 volumes:
   mongo_data:
+  minio_data:
