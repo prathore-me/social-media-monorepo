@@ -1,6 +1,6 @@
 # Social Media Monorepo
 
-A full-stack, production-ready social media application built as an **Nx monorepo** with **microservices architecture**. This project demonstrates a modern approach to building scalable applications with NestJS, React 19, MongoDB, and comprehensive deployment support via Docker and Kubernetes.
+A full-stack, production-ready social media application built as an **Nx monorepo** with **microservices architecture**. This project demonstrates a modern approach to building scalable applications with NestJS, React 19, MongoDB, MinIO, and comprehensive deployment support via Docker and Kubernetes.
 
 ## 📋 Project Overview
 
@@ -8,11 +8,10 @@ This is a **full-stack social media platform** featuring:
 
 - **User Authentication** - JWT-based auth with email/password, password hashing with bcrypt
 - **User Profiles** - Profile management with bio, profile pictures, follower/following system
-- **Posts & Feed** - Create, edit, delete posts with image support and captions
+- **Posts & Feed** - Create, edit, delete posts with real image uploads and captions
+- **Media Uploads** - Image upload for posts and profile pictures via MinIO object storage
 - **Social Interactions** - Like/unlike posts, comment system with nested comments
 - **User Discovery** - Search users by username, follow/unfollow functionality
-- **Feed System** - Personalized feed aggregation for connected users
-- **Real-time Updates** - WebSocket-ready architecture for future real-time features
 - **Microservices Architecture** - Decoupled, independently deployable services
 - **Production Deployment** - Docker Compose and Kubernetes support with hot-reload for development
 
@@ -20,46 +19,44 @@ This is a **full-stack social media platform** featuring:
 
 - **Framework:** Nx 21.6.10 - Monorepo workspace management with task orchestration
 - **Backend:** NestJS 11.0.0 - Enterprise Node.js framework with TypeScript
-- **Frontend:** React 19 - Modern UI library with React Router v6, Hooks-based architecture
-- **Database:** MongoDB 8.0 with Mongoose 9.1.0 - Schema validation and ODM
-- **Authentication:** JWT + Passport.js - Stateless, scalable authentication
-- **Security:** Bcrypt 6.0.0 - Secure password hashing
-- **HTTP Client:** Axios 1.13.2 - Request interceptor for JWT injection
-- **Styling:** TailwindCSS 4.2.2 + CSS - Utility-first and custom styling
-- **Form Validation:** class-validator + class-transformer + react-hook-form
-- **Build Tools:** Vite 7.0.0 (frontend), Webpack (backend), SWC 1.5.7 (transpilation)
-- **Testing:** Vitest 3.0.0, Jest - Unit and integration testing
-- **Notifications:** react-hot-toast 2.6.0 - Toast UI notifications
-- **Icons:** lucide-react 0.562.0 - Icon library
-- **Package Management:** npm
+- **Frontend:** React 19, Vite 7.0.0, TailwindCSS 4.2.2
+- **Database:** MongoDB 8.0 with Mongoose 9.1.0
+- **Object Storage:** MinIO (S3-compatible, self-hosted)
+- **Authentication:** JWT + Passport.js, Bcrypt 6.0.0
+- **HTTP Client:** Axios 1.13.2 with JWT interceptor
+- **File Uploads:** Multer 2.1.1
+- **Notifications:** react-hot-toast 2.6.0
+- **Icons:** lucide-react 0.562.0
+- **Testing:** Vitest 3.0.0, Jest
 - **Language:** TypeScript 5.9.2
 - **Deployment:** Docker, Docker Compose, Kubernetes
-- **CI/CD Ready:** ESLint 9.8.0, Prettier 2.6.2
+- **CI/CD:** GitHub Actions, ESLint 9.8.0, Prettier
+
+---
 
 ## 🏗️ Project Architecture
 
 ### Monorepo Structure
 
 ```
-apps/                                    # Independently deployable applications
+apps/
 ├── auth-api/                          # Port 3000 - Authentication microservice
 │   ├── src/
-│   │   ├── app/app.module.ts          # Root module with MongoDB connection
+│   │   ├── app/app.module.ts
 │   │   ├── auth/
-│   │   │   ├── auth.controller.ts     # Endpoints: /auth/signup, /auth/login, /auth/me
-│   │   │   ├── auth.service.ts        # Password hashing, JWT generation, user creation
-│   │   │   └── auth.module.ts         # JWT + Passport + Mongoose configuration
-│   │   └── main.ts                    # NestJS bootstrap with global pipes and CORS
-│   ├── Dockerfile                     # Multi-stage build: development & production
-│   └── webpack.config.js              # Bundle configuration
+│   │   │   ├── auth.controller.ts     # /auth/signup, /auth/login, /auth/me
+│   │   │   ├── auth.service.ts
+│   │   │   └── auth.module.ts
+│   │   └── main.ts
+│   ├── Dockerfile
+│   └── webpack.config.js
 │
 ├── posts-api/                         # Port 3001 - Posts & Interactions microservice
 │   ├── src/
 │   │   ├── app/app.module.ts
 │   │   ├── posts/
-│   │   │   ├── posts.controller.ts    # CRUD: /posts, /posts/feed, /posts/user/:id
-│   │   │   │                          # Social: /posts/:id/like, /posts/:id/comments
-│   │   │   ├── posts.service.ts       # Post management, like toggle, comments
+│   │   │   ├── posts.controller.ts    # /posts, /posts/feed, /posts/:id/like, etc.
+│   │   │   ├── posts.service.ts
 │   │   │   ├── posts.module.ts
 │   │   │   └── dto/                   # CreatePostDto, UpdatePostDto, CreateCommentDto
 │   │   └── main.ts
@@ -69,615 +66,218 @@ apps/                                    # Independently deployable applications
 │   ├── src/
 │   │   ├── app/app.module.ts
 │   │   ├── profiles/
-│   │   │   ├── profiles.controller.ts # CRUD: /profiles, /profiles/:username
-│   │   │   │                          # Social: /profiles/:id/follow
-│   │   │   │                          # Search: /profiles/search?q=term
-│   │   │   ├── profiles.service.ts    # Profile management, follow system
+│   │   │   ├── profiles.controller.ts # /profiles, /profiles/:username, /profiles/:id/follow
+│   │   │   ├── profiles.service.ts
 │   │   │   ├── profiles.module.ts
 │   │   │   └── dto/                   # CreateProfileDto, UpdateProfileDto
 │   │   └── main.ts
 │   └── Dockerfile
 │
+├── media-api/                         # Port 3003 - File Upload microservice
+│   ├── src/
+│   │   ├── app/app.module.ts
+│   │   ├── media/
+│   │   │   ├── media.controller.ts    # POST /media/upload/:bucket
+│   │   │   ├── media.service.ts       # MinIO client, bucket management, file upload
+│   │   │   └── media.module.ts
+│   │   └── main.ts
+│   └── Dockerfile
+│
 └── web-app/                           # Port 5173 (dev) / 80 (prod) - React SPA
     ├── src/
-    │   ├── main.tsx                   # React bootstrap with AuthProvider & BrowserRouter
-    │   ├── app/app.tsx                # Root component with route definitions
-    │   ├── pages/                     # Route components
-    │   │   ├── Login.tsx              # Email/password login form
-    │   │   ├── Signup.tsx             # Registration form (email, username, password)
-    │   │   ├── Feed.tsx               # Main feed with posts
-    │   │   ├── Profile.tsx            # User profile view (posts, bio, followers)
-    │   │   └── EditProfile.tsx        # Profile editor (bio, avatar)
-    │   ├── components/                # Reusable UI components
-    │   │   ├── layout/
-    │   │   │   ├── Navbar.tsx         # Navigation header with search and user menu
-    │   │   │   └── ProtectedRoute.tsx # Auth guard for protected pages
-    │   │   ├── post/
-    │   │   │   ├── PostCard.tsx       # Single post display with like/comment UI
-    │   │   │   ├── PostGrid.tsx       # Profile post grid layout
-    │   │   │   └── CreatePostModal.tsx # New post form modal
-    │   │   ├── profile/
-    │   │   │   └── FollowButton.tsx   # Follow/unfollow toggle button
-    │   │   └── ui/
-    │   │       ├── Avatar.tsx         # User avatar with fallback initials
-    │   │       ├── Modal.tsx          # Reusable modal wrapper
-    │   │       └── Spinner.tsx        # Loading indicator
-    │   ├── hooks/                     # Custom React hooks
-    │   │   ├── usePosts.ts            # Post management (fetch, create, update, delete)
-    │   │   └── useProfile.ts          # Profile data fetching
-    │   ├── context/
-    │   │   └── AuthContext.tsx        # Global auth state with user & token management
-    │   ├── api/                       # API client layer
-    │   │   ├── axios.ts               # Axios instance with JWT interceptor
-    │   │   ├── auth.api.ts            # Auth endpoints (login, signup, getMe)
-    │   │   ├── posts.api.ts           # Posts endpoints (CRUD, like, comments)
-    │   │   └── users.api.ts           # User endpoints (profile, search, follow)
-    │   ├── config/
-    │   │   └── api.ts                 # API base URLs configured from environment
-    │   ├── types/
-    │   │   └── index.ts               # TypeScript interfaces (User, Profile, Post, etc.)
-    │   └── styles.css                 # Global styling with TailwindCSS v4
-    ├── vite.config.ts                 # Vite build config with React + Tailwind plugins
-    ├── index.html                     # HTML entry point
-    ├── Dockerfile                     # Multi-stage: build + Nginx serving
-    ├── nginx.conf                     # Reverse proxy config for SPA routing
-    └── entrypoint.sh                  # Runtime env var injection script
+    │   ├── main.tsx
+    │   ├── app/app.tsx
+    │   ├── pages/                     # Login, Signup, Feed, Profile, EditProfile
+    │   ├── components/
+    │   │   ├── layout/                # Navbar, ProtectedRoute
+    │   │   ├── post/                  # PostCard, PostGrid, CreatePostModal
+    │   │   ├── profile/               # FollowButton
+    │   │   └── ui/                    # Avatar, Modal, Spinner
+    │   ├── hooks/                     # usePosts, useProfile
+    │   ├── context/AuthContext.tsx
+    │   ├── api/                       # axios, auth.api, posts.api, users.api, media.api
+    │   ├── config/api.ts              # API base URLs from environment
+    │   ├── types/index.ts
+    │   └── styles.css
+    ├── Dockerfile
+    ├── nginx.conf
+    └── entrypoint.sh                  # Runtime env var injection
 
-libs/shared/                          # Shared code across backend services
-├── auth-utils/                        # Authentication utilities library
-│   ├── src/lib/
-│   │   ├── jwt.strategy.ts           # Passport JWT strategy for token validation
-│   │   ├── jwt-auth.guard.ts         # NestJS guard for protected routes
-│   │   └── decorators/
-│   │       └── current-user.decorator.ts # Extract user from JWT token
-│   └── src/index.ts                  # Public API exports
-│
-├── dto/                               # Data Transfer Objects (validation contracts)
-│   ├── src/lib/
-│   │   ├── signup.dto.ts             # Email, username, password validation
-│   │   └── login.dto.ts              # Email, password validation
-│   └── src/index.ts
-│
-├── schemas/                           # Mongoose schemas (database models)
-│   ├── src/lib/
-│   │   ├── user.schema.ts            # User account (email, password, username)
-│   │   ├── profile.schema.ts         # User profile (bio, followers, following, pics)
-│   │   └── post.schema.ts            # Post with comments nested
-│   └── src/index.ts
-│
-└── constants/                         # Shared constants (future use)
-    └── src/
+libs/shared/
+├── auth-utils/                        # JwtStrategy, JwtAuthGuard, @CurrentUser() decorator
+├── dto/                               # SignupDto, LoginDto
+└── schemas/                           # User, Profile, Post Mongoose schemas
 
-k8s/                                  # Kubernetes manifests for production
-├── namespace.yaml                    # Isolated namespace for services
-├── configmap.yaml                    # Non-sensitive configuration
-├── secret.yaml                       # Sensitive data (credentials, secrets)
-├── ingress.yaml                      # External traffic routing
+k8s/
+├── namespace.yaml
+├── configmap.yaml
+├── secret.yaml
+├── ingress.yaml
 ├── auth-api/
-│   ├── deployment.yaml               # Auth API pod replicas & scaling
-│   └── service.yaml                  # Internal service discovery
 ├── posts-api/
-│   ├── deployment.yaml
-│   └── service.yaml
 ├── users-api/
-│   ├── deployment.yaml
-│   └── service.yaml
+├── media-api/
 ├── web-app/
-│   ├── deployment.yaml
-│   └── service.yaml
 └── mongo-db/
-    ├── statefulset.yaml              # MongoDB StatefulSet for data persistence
-    └── service.yaml                  # MongoDB service for backend access
-
-docker-compose.dev.yaml               # Local development with hot-reload
-docker-compose.yaml                   # Production deployment
-tsconfig.base.json                    # Base TypeScript config with path aliases
-nx.json                               # Nx workspace configuration
-package.json                          # Dependencies and npm scripts
 ```
 
 ### Service Dependencies
 
 ```
 web-app (React SPA)
-  ├→ auth-api (JWT authentication)
-  ├→ posts-api (Post CRUD & interactions)
-  └→ users-api (User profiles & social graph)
+  ├→ auth-api   (JWT authentication)
+  ├→ posts-api  (Post CRUD & interactions)
+  ├→ users-api  (User profiles & social graph)
+  └→ media-api  (File uploads)
 
-auth-api (Microservice)
-  ├→ MongoDB (User storage)
-  └→ users-api (Create profile on signup)
+auth-api
+  ├→ MongoDB    (User storage)
+  └→ users-api  (Create profile on signup)
 
-posts-api (Microservice)
-  └→ MongoDB (Posts & comments)
+posts-api
+  └→ MongoDB    (Posts & comments)
 
-users-api (Microservice)
-  └→ MongoDB (Profiles & social connections)
+users-api
+  └→ MongoDB    (Profiles & social connections)
+
+media-api
+  └→ MinIO      (Object storage for images & videos)
 ```
-
-## 🚀 Microservices API Reference
-
-### 1. **Auth API** (`apps/auth-api`) - Port 3000
-
-**Purpose:** User authentication, account creation, JWT token management
-
-**Base URL:** `http://localhost:3000/api/auth` (or `http://auth-api:3000/api` in Docker network)
-
-**Endpoints:**
-
-| Method | Endpoint       | Description                     | Body                            | Response                                              |
-| ------ | -------------- | ------------------------------- | ------------------------------- | ----------------------------------------------------- |
-| `POST` | `/auth/signup` | Register new user               | `{ email, username, password }` | `{ message: "Account created successfully" }`         |
-| `POST` | `/auth/login`  | Authenticate user, get JWT      | `{ email, password }`           | `{ access_token, user: { userId, username, email } }` |
-| `GET`  | `/auth/me`     | Get current user (JWT required) | None                            | `{ userId, username, email }`                         |
-
-**Technologies:** NestJS, MongoDB, Passport.js, JWT (@nestjs/jwt), Bcrypt
-
-**Key Implementation Details:**
-
-- Password hashing with bcrypt (10 salt rounds)
-- JWT tokens expire in 1 hour (configurable via `signOptions`)
-- On successful signup:
-  1. Check for duplicate email/username
-  2. Hash password with bcrypt
-  3. Create user document in MongoDB
-  4. Call users-api to create profile
-  5. Return success message
-- On login: validate credentials, generate JWT token
-- `JwtAuthGuard` protects `/me` endpoint
-
-**Service File Structure:**
-
-- [apps/auth-api/src/auth/auth.controller.ts](apps/auth-api/src/auth/auth.controller.ts) - HTTP endpoints
-- [apps/auth-api/src/auth/auth.service.ts](apps/auth-api/src/auth/auth.service.ts) - Business logic
-- [apps/auth-api/src/auth/auth.module.ts](apps/auth-api/src/auth/auth.module.ts) - Dependencies
 
 ---
 
-### 2. **Posts API** (`apps/posts-api`) - Port 3001
+## 🚀 API Reference
 
-**Purpose:** Create, manage, and interact with posts; like/comment system
+### Auth API — `http://localhost:3000/api`
 
-**Base URL:** `http://localhost:3001/api/posts`
+| Method | Endpoint       | Auth | Body                            | Response                                              |
+| ------ | -------------- | ---- | ------------------------------- | ----------------------------------------------------- |
+| `POST` | `/auth/signup` | ❌   | `{ email, username, password }` | `{ message }`                                         |
+| `POST` | `/auth/login`  | ❌   | `{ email, password }`           | `{ access_token, user: { userId, username, email } }` |
+| `GET`  | `/auth/me`     | ✅   | —                               | `{ userId, username, email }`                         |
 
-**Endpoints:**
+### Posts API — `http://localhost:3001/api`
 
-| Method   | Endpoint                   | Description          | Auth   | Body                     | Response                                 |
-| -------- | -------------------------- | -------------------- | ------ | ------------------------ | ---------------------------------------- |
-| `POST`   | `/`                        | Create new post      | ✅ JWT | `{ imageUrl, caption? }` | `Post object`                            |
-| `GET`    | `/feed`                    | Get all posts (feed) | ❌     | None                     | `Post[]`                                 |
-| `GET`    | `/user/:userId`            | Get user's posts     | ❌     | None                     | `Post[]`                                 |
-| `PATCH`  | `/:id`                     | Update post caption  | ✅ JWT | `{ caption }`            | `Post object`                            |
-| `DELETE` | `/:id`                     | Delete post          | ✅ JWT | None                     | `{ message }`                            |
-| `POST`   | `/:id/like`                | Toggle like on post  | ✅ JWT | None                     | `{ liked: boolean, likesCount: number }` |
-| `POST`   | `/:id/comments`            | Add comment to post  | ✅ JWT | `{ text }`               | `Post object`                            |
-| `DELETE` | `/:id/comments/:commentId` | Delete comment       | ✅ JWT | None                     | `Post object`                            |
+| Method   | Endpoint                         | Auth | Description                           |
+| -------- | -------------------------------- | ---- | ------------------------------------- |
+| `GET`    | `/posts/feed`                    | ❌   | Get all posts                         |
+| `GET`    | `/posts/user/:userId`            | ❌   | Get posts by user                     |
+| `POST`   | `/posts`                         | ✅   | Create post `{ imageUrl, caption? }`  |
+| `PATCH`  | `/posts/:id`                     | ✅   | Edit post caption                     |
+| `DELETE` | `/posts/:id`                     | ✅   | Delete post                           |
+| `POST`   | `/posts/:id/like`                | ✅   | Toggle like → `{ liked, likesCount }` |
+| `POST`   | `/posts/:id/comments`            | ✅   | Add comment `{ text }`                |
+| `DELETE` | `/posts/:id/comments/:commentId` | ✅   | Delete comment                        |
 
-**Technologies:** NestJS, MongoDB, Mongoose, JWT
+### Users API — `http://localhost:3002/api`
 
-**Data Models:**
+| Method  | Endpoint                   | Auth | Description                          |
+| ------- | -------------------------- | ---- | ------------------------------------ |
+| `POST`  | `/profiles`                | ❌   | Create profile (called by auth-api)  |
+| `GET`   | `/profiles/search?q=`      | ❌   | Search users by username             |
+| `GET`   | `/profiles/id/:userId`     | ❌   | Get profile by userId                |
+| `GET`   | `/profiles/:username`      | ❌   | Get profile by username              |
+| `PATCH` | `/profiles`                | ✅   | Update own profile (bio, profilePic) |
+| `POST`  | `/profiles/:userId/follow` | ✅   | Toggle follow/unfollow               |
 
-```typescript
-interface Post {
-  _id: string;
-  userId: string; // Creator's user ID
-  username: string; // Creator's username
-  imageUrl: string; // Post image URL
-  caption?: string; // Post text
-  likes: string[]; // Array of user IDs who liked
-  comments: Comment[]; // Nested comment array
-  createdAt: Date;
-  updatedAt: Date;
-}
+### Media API — `http://localhost:3003/api`
 
-interface Comment {
-  _id: string;
-  userId: string;
-  username: string;
-  text: string;
-  createdAt: Date;
-}
-```
+| Method | Endpoint                         | Auth | Description                                     |
+| ------ | -------------------------------- | ---- | ----------------------------------------------- |
+| `POST` | `/media/upload/posts-images`     | ✅   | Upload post image (JPEG/PNG/WebP/GIF, max 10MB) |
+| `POST` | `/media/upload/profile-pictures` | ✅   | Upload profile picture (JPEG/PNG/WebP, max 5MB) |
+| `POST` | `/media/upload/videos`           | ✅   | Upload video (MP4/WebM/MOV, max 100MB)          |
 
-**Service File Structure:**
-
-- [apps/posts-api/src/posts/posts.controller.ts](apps/posts-api/src/posts/posts.controller.ts)
-- [apps/posts-api/src/posts/posts.service.ts](apps/posts-api/src/posts/posts.service.ts)
-- [apps/posts-api/src/posts/posts.module.ts](apps/posts-api/src/posts/posts.module.ts)
+**Request:** `multipart/form-data` with field `file`
+**Response:** `{ url: "http://localhost:9000/posts-images/filename.jpg" }`
 
 ---
 
-### 3. **Users API** (`apps/users-api`) - Port 3002
+## 🗂️ MinIO Object Storage
 
-**Purpose:** User profile management, follower/following system, user discovery
+MinIO is an S3-compatible self-hosted object storage. Files are stored in public buckets and served directly via URL.
 
-**Base URL:** `http://localhost:3002/api/profiles`
+**Buckets:**
 
-**Endpoints:**
+| Bucket             | Purpose              | Max Size | Allowed Types        |
+| ------------------ | -------------------- | -------- | -------------------- |
+| `posts-images`     | Post images          | 10MB     | JPEG, PNG, WebP, GIF |
+| `profile-pictures` | Profile avatars      | 5MB      | JPEG, PNG, WebP      |
+| `videos`           | Post videos (future) | 100MB    | MP4, WebM, MOV       |
 
-| Method  | Endpoint          | Description                         | Auth   | Query          | Response                 |
-| ------- | ----------------- | ----------------------------------- | ------ | -------------- | ------------------------ |
-| `POST`  | `/`               | Create profile (called by auth-api) | ❌     | None           | `Profile object`         |
-| `GET`   | `/search`         | Search users by username            | ❌     | `q=searchTerm` | `Profile[]`              |
-| `GET`   | `/id/:userId`     | Get profile by user ID              | ❌     | None           | `Profile object`         |
-| `GET`   | `/:username`      | Get profile by username             | ❌     | None           | `Profile object`         |
-| `PATCH` | `/`               | Update own profile                  | ✅ JWT | None           | `Profile object`         |
-| `POST`  | `/:userId/follow` | Toggle follow/unfollow              | ✅ JWT | None           | `{ following: boolean }` |
+**Access:**
 
-**Technologies:** NestJS, MongoDB, Mongoose, JWT
+- API: `http://localhost:9000`
+- Web Console: `http://localhost:9001` (login: `minioadmin` / `minioadmin123`)
+- Files are publicly accessible via URL: `http://localhost:9000/<bucket>/<filename>`
 
-**Data Models:**
-
-```typescript
-interface Profile {
-  _id: string;
-  userId: string; // Reference to User account
-  username: string; // Unique username
-  bio: string; // Profile biography
-  profilePic: string; // Profile picture URL
-  followers: string[]; // Array of user IDs following this user
-  following: string[]; // Array of user IDs this user follows
-  createdAt: Date;
-  updatedAt: Date;
-}
-```
-
-**Service File Structure:**
-
-- [apps/users-api/src/profiles/profiles.controller.ts](apps/users-api/src/profiles/profiles.controller.ts)
-- [apps/users-api/src/profiles/profiles.service.ts](apps/users-api/src/profiles/profiles.service.ts)
-- [apps/users-api/src/profiles/profiles.module.ts](apps/users-api/src/profiles/profiles.module.ts)
+**Production:** Swap MinIO for AWS S3 with zero code changes — the SDK is S3-compatible.
 
 ---
-
-### 4. **Web App** (`apps/web-app`) - Port 5173 (dev) / 80 (prod)
-
-**Purpose:** React-based single-page application (SPA) frontend
-
-**Base URL:** `http://localhost:5173` (dev), or served behind Nginx in production
-
-**Routes:**
-
-| Path                 | Component         | Auth Required | Description                                       |
-| -------------------- | ----------------- | ------------- | ------------------------------------------------- |
-| `/login`             | `Login.tsx`       | ❌            | Email/password login form with error handling     |
-| `/signup`            | `Signup.tsx`      | ❌            | Registration form (email, username, password)     |
-| `/`                  | `Feed.tsx`        | ✅            | Main feed showing all posts                       |
-| `/profile/:username` | `Profile.tsx`     | ✅            | View user profile with bio, posts, follower count |
-| `/edit-profile`      | `EditProfile.tsx` | ✅            | Edit own profile (bio, profile picture)           |
-| `*`                  | Redirect          | -             | Redirects to `/login` if not authenticated        |
-
-**Technologies:** React 19.0.0, Vite 7.0.0, React Router 6.29.0, Axios 1.13.2, TailwindCSS 4.2.2, lucide-react, react-hot-toast
-
-**Key Hooks & Context:**
-
-```typescript
-// Global auth state
-useAuth() → { user, setUser, loading, logout }
-
-// Post management
-usePosts() → { posts, loading, addPost, removePost, updatePost }
-
-// Profile management
-useProfile(username) → { profile, setProfile, posts, loading, error }
-```
-
-**API Client Layer:**
-
-- [apps/web-app/src/api/axios.ts](apps/web-app/src/api/axios.ts) - Axios instance with JWT interceptor
-- [apps/web-app/src/api/auth.api.ts](apps/web-app/src/api/auth.api.ts) - Auth endpoints (login, signup, getMe)
-- [apps/web-app/src/api/posts.api.ts](apps/web-app/src/api/posts.api.ts) - Posts endpoints (feed, CRUD, like, comments)
-- [apps/web-app/src/api/users.api.ts](apps/web-app/src/api/users.api.ts) - User/profile endpoints (get, update, search, follow)
-
-**Frontend Authentication Flow:**
-
-1. User enters credentials on `/login` or `/signup`
-2. Frontend calls auth-api with credentials
-3. Auth API returns `{ access_token, user: { userId, username, email } }`
-4. Frontend stores token in `localStorage` and user in React Context
-5. Axios interceptor automatically adds `Authorization: Bearer <token>` to all requests
-6. Protected routes check for user in Context; redirect to `/login` if missing
-7. 401 responses trigger token removal and redirect to `/login`
-8. Page refresh: AuthContext checks localStorage for token, calls `/auth/me` to restore session
-
-**Key Components:**
-
-- `layout/Navbar.tsx` - Navigation header with search, create post, and user avatar
-- `layout/ProtectedRoute.tsx` - Auth guard wrapper for protected pages
-- `post/PostCard.tsx` - Single post display with like/comment UI
-- `post/PostGrid.tsx` - Profile posts grid layout
-- `post/CreatePostModal.tsx` - New post form modal
-- `profile/FollowButton.tsx` - Follow/unfollow toggle button
-- `ui/Avatar.tsx` - User avatar with gradient fallback initials
-- `ui/Modal.tsx` - Reusable modal wrapper with ESC support
-- `ui/Spinner.tsx` - Loading indicator
-
-**File Structure:**
-
-- [apps/web-app/src/pages/](apps/web-app/src/pages/) - Route components
-- [apps/web-app/src/components/](apps/web-app/src/components/) - Reusable UI components (layout, post, profile, ui)
-- [apps/web-app/src/hooks/](apps/web-app/src/hooks/) - Custom React hooks (usePosts, useProfile)
-- [apps/web-app/src/context/AuthContext.tsx](apps/web-app/src/context/AuthContext.tsx) - Global auth state
-- [apps/web-app/src/types/index.ts](apps/web-app/src/types/index.ts) - TypeScript interfaces (User, Profile, Post, Comment)
-- [apps/web-app/src/config/api.ts](apps/web-app/src/config/api.ts) - API base URLs from environment variables
 
 ## 📚 Shared Libraries
 
-All backend services share code through the `libs/shared` directory:
+### `auth-utils`
 
-### `auth-utils` - Authentication Utilities
+- `JwtStrategy` — Passport JWT strategy
+- `JwtAuthGuard` — route protection guard (`@UseGuards(JwtAuthGuard)`)
+- `@CurrentUser()` — extracts `{ userId, username, email }` from JWT in controllers
 
-**Purpose:** Centralized authentication logic for NestJS services
+### `dto`
 
-**Exports:**
+- `SignupDto` — email, username, password (min 8 chars)
+- `LoginDto` — email, password
 
-- **`JwtStrategy`** - Passport strategy for validating JWT tokens
+### `schemas`
 
-  - Validates token signature
-  - Extracts user info from token payload
-  - Used by `JwtAuthGuard`
-
-- **`JwtAuthGuard`** - NestJS route guard for JWT protection
-
-  - Applied with `@UseGuards(JwtAuthGuard)` decorator
-  - Returns 401 if token missing or invalid
-
-- **`CurrentUser()` Decorator** - Extract user from request
-  - Gets user object from `request.user` (set by JwtStrategy)
-  - Usage: `@CurrentUser() user: any` in controller methods
-  - Provides typed access to `user.userId`, `user.username`, `user.email`
-
-**Files:**
-
-- [libs/shared/auth-utils/src/lib/jwt.strategy.ts](libs/shared/auth-utils/src/lib/jwt.strategy.ts)
-- [libs/shared/auth-utils/src/lib/jwt-auth.guard.ts](libs/shared/auth-utils/src/lib/jwt-auth.guard.ts)
-- [libs/shared/auth-utils/src/lib/decorators/current-user.decorator.ts](libs/shared/auth-utils/src/lib/decorators/current-user.decorator.ts)
-
-**Usage Example:**
-
-```typescript
-import { JwtAuthGuard, CurrentUser } from '@social-media-monorepo/shared-auth-utils';
-
-@Controller('posts')
-export class PostsController {
-  @UseGuards(JwtAuthGuard)
-  @Post()
-  create(@Body() dto: CreatePostDto, @CurrentUser() user: any) {
-    return this.postsService.create(dto, user.userId, user.username);
-  }
-}
-```
-
-### `dto` - Data Transfer Objects
-
-**Purpose:** Request/response validation contracts with class-validator
-
-**Exports:**
-
-- **`SignupDto`** - User registration validation
-
-  ```typescript
-  {
-    email: string;
-    username: string;
-    password: string; /* min 8 chars */
-  }
-  ```
-
-- **`LoginDto`** - User login validation
-  ```typescript
-  {
-    email: string;
-    password: string;
-  }
-  ```
-
-**Features:**
-
-- Automatic validation via global `ValidationPipe`
-- Returns 400 with detailed error messages for invalid data
-- Powered by `class-validator` and `class-transformer`
-
-**Files:**
-
-- [libs/shared/dto/src/lib/signup.dto.ts](libs/shared/dto/src/lib/signup.dto.ts)
-- [libs/shared/dto/src/lib/login.dto.ts](libs/shared/dto/src/lib/login.dto.ts)
-
-### `schemas` - Mongoose Database Models
-
-**Purpose:** Shared MongoDB schemas used by backend services
-
-**Exports:**
-
-- **`User` Schema** - User account data (auth-api)
-
-  ```typescript
-  {
-    email: string;
-    username: string;
-    password: string; /* hashed */
-  }
-  ```
-
-- **`Profile` Schema** - User profile data (users-api)
-
-  ```typescript
-  { userId: string; username: string; bio: string; profilePic: string; followers: string[]; following: string[]; }
-  ```
-
-- **`Post` Schema** - Post and comments (posts-api)
-  ```typescript
-  { userId: string; username: string; imageUrl: string; caption: string; likes: string[]; comments: Comment[]; }
-  ```
-
-**Files:**
-
-- [libs/shared/schemas/src/lib/user.schema.ts](libs/shared/schemas/src/lib/user.schema.ts)
-- [libs/shared/schemas/src/lib/profile.schema.ts](libs/shared/schemas/src/lib/profile.schema.ts)
-- [libs/shared/schemas/src/lib/post.schema.ts](libs/shared/schemas/src/lib/post.schema.ts)
-
-### `constants` - Shared Constants
-
-**Purpose:** Placeholder for future shared constants (API endpoints, feature flags, error messages).
-
-**Files:** [libs/shared/constants/src/](libs/shared/constants/src/)
+- `User` — email, username, hashed password
+- `Profile` — userId, username, bio, profilePic, followers[], following[]
+- `Post` — userId, username, imageUrl, caption, likes[], comments[]
 
 ---
 
-## 🗄️ Database Architecture
+## 🗄️ Database
 
-**MongoDB 8.0** is used as the primary datastore:
+**MongoDB 8.0** — Collections: `users`, `profiles`, `posts`
 
-### Database Name
-
-- **Development:** `social-media-monorepo-db` (set via `MONGO_INITDB_DATABASE` in docker-compose)
-- **Production:** Configurable via environment variable
-
-### Collections
-
-**1. `users` (auth-api)**
-
-```javascript
-{
-  _id: ObjectId,
-  email: "user@example.com",      // Unique
-  username: "john_doe",            // Unique
-  password: "$2b$10$...",          // Bcrypt hash
-  createdAt: ISODate("..."),
-  updatedAt: ISODate("...")
-}
-```
-
-**2. `profiles` (users-api)**
-
-```javascript
-{
-  _id: ObjectId,
-  userId: "...objectId...",        // Reference to users._id
-  username: "john_doe",
-  bio: "Software developer",
-  profilePic: "https://...",
-  followers: ["...userId1...", "...userId2..."],
-  following: ["...userId3..."],
-  createdAt: ISODate("..."),
-  updatedAt: ISODate("...")
-}
-```
-
-**3. `posts` (posts-api)**
-
-```javascript
-{
-  _id: ObjectId,
-  userId: "...objectId...",
-  username: "john_doe",
-  imageUrl: "https://...",
-  caption: "Beautiful sunset!",
-  likes: ["...userId1...", "...userId2..."],
-  comments: [
-    { _id: ObjectId, userId: "...", username: "alice", text: "Amazing!", createdAt: ISODate("...") }
-  ],
-  createdAt: ISODate("..."),
-  updatedAt: ISODate("...")
-}
-```
-
-### Connection Configuration
-
-**Default Connection (Docker):** `mongodb://mongodb:27017/social-media-monorepo-db`
+**Connection:** `mongodb://mongodb:27017/social-media-monorepo-db`
 
 ```bash
-# Access from container
 docker exec -it sm-mongodb-container mongosh
-
-# Access from host
-mongosh mongodb://localhost:27017/social-media-monorepo-db
+mongosh mongodb://localhost:27017/social-media-monorepo-db  # from host
 ```
 
-### Indexing
+---
 
-Mongoose automatically creates indexes for: `users.email` (unique), `users.username` (unique), `profiles.userId` (unique), `profiles.username` (unique).
+## 🔐 Authentication Flow
 
-## 🔐 Authentication & Security
+1. Signup → `auth-api` hashes password, creates user, calls `users-api` to create profile
+2. Login → returns JWT (expires 1h) + `{ userId, username, email }`
+3. JWT stored in `localStorage`, Axios interceptor adds `Authorization: Bearer <token>`
+4. `JwtAuthGuard` + `JwtStrategy` validate token on protected endpoints
+5. `@CurrentUser()` extracts user from token payload
+6. 401 responses → frontend clears token and redirects to `/login`
 
-### JWT Token Payload
+---
 
-```typescript
-{
-  sub: "636f7de566c58b001a2f47f0",  // MongoDB _id (maps to userId)
-  username: "john_doe",
-  email: "user@example.com",
-  iat: 1605332320,                   // Issued at
-  exp: 1605335920                    // Expiration (1 hour later)
-}
-```
-
-### Signup Flow
-
-1. Frontend POSTs `{ email, username, password }` to `/api/auth/signup`
-2. Auth API validates with `SignupDto`, checks duplicates, hashes password
-3. Creates user in MongoDB, calls users-api to create profile
-4. Returns `{ message: "Account created successfully" }`
-
-### Login Flow
-
-1. Frontend POSTs `{ email, password }` to `/api/auth/login`
-2. Auth API validates credentials, generates JWT (1 hour expiry)
-3. Returns `{ access_token, user: { userId, username, email } }`
-4. Frontend stores token in `localStorage`, user in React Context
-
-### Protected Route Access
-
-1. Axios interceptor adds `Authorization: Bearer <token>` to every request
-2. NestJS `JwtAuthGuard` validates token signature with `JWT_SECRET`
-3. `@CurrentUser()` decorator extracts user from validated payload
-4. 401 responses → frontend clears token and redirects to `/login`
-
-### Security Features
-
-- **Password Hashing:** Bcrypt with 10 salt rounds
-- **JWT Signing:** HS256 algorithm with `JWT_SECRET`
-- **Token Expiration:** 1 hour (configurable in modules)
-- **CORS:** Enabled on all backend services
-- **HTTP-Only Cookies:** Not used (consider for production)
-- **Token Refresh:** Not implemented (planned improvement)
-
-## 🐳 Deployment & Running Services
+## 🐳 Local Development
 
 ### Prerequisites
 
 - Node.js 22+
 - Docker & Docker Compose
 
-### Local Development with Docker (Hot-Reload)
+### Setup
 
 ```bash
-npm run dev:docker       # Start all services with hot-reload
-npm run dev:docker:down  # Stop and remove volumes
+git clone https://github.com/prathore-me/social-media-monorepo.git
+cd social-media-monorepo
+npm install
+cp .env.example .env.local
+# Edit .env.local — set a strong JWT_SECRET
 ```
 
-**Access services:**
-
-- **Web App:** `http://localhost:5173`
-- **Auth API:** `http://localhost:3000/api`
-- **Posts API:** `http://localhost:3001/api`
-- **Users API:** `http://localhost:3002/api`
-
-**Hot-reload behavior:**
-
-- NestJS apps: Nx daemon (`NX_DAEMON=true`) watches files, auto-rebuilds and restarts
-- React app: Vite dev server hot-replaces modules
-
-### Production Deployment with Docker
-
-```bash
-npm run prod:docker       # Start (uses pre-built Docker Hub images)
-npm run prod:docker:down  # Stop
-```
-
-### Environment Variables
-
-**Create `.env.local` in project root:**
+### Environment Variables (`.env.local`)
 
 ```bash
 # Database
@@ -685,56 +285,93 @@ MONGO_INITDB_DATABASE=social-media-monorepo-db
 MONGO_URI=mongodb://mongodb:27017/social-media-monorepo-db
 
 # Auth
-JWT_SECRET=your-very-secret-key-here-change-in-production
+JWT_SECRET=your-strong-secret-key-here
 
-# Inter-service URLs (Docker network)
+# MinIO
+MINIO_ROOT_USER=minioadmin
+MINIO_ROOT_PASSWORD=minioadmin123
+MINIO_ENDPOINT=minio
+MINIO_PORT=9000
+MINIO_USE_SSL=false
+
+# Inter-service (Docker network)
 USERS_API_URL=http://users-api:3000/api
 
-# Frontend URLs (browser)
+# Frontend (browser)
 VITE_AUTH_API_URL=http://localhost:3000/api
 VITE_USERS_API_URL=http://localhost:3002/api
 VITE_POSTS_API_URL=http://localhost:3001/api
+VITE_MEDIA_API_URL=http://localhost:3003/api
 ```
 
-**Variables used by services:**
+| Variable              | Used By           | Purpose                     |
+| --------------------- | ----------------- | --------------------------- |
+| `MONGO_URI`           | All backend APIs  | MongoDB connection          |
+| `JWT_SECRET`          | All backend APIs  | Sign/verify JWT tokens      |
+| `MINIO_ROOT_USER`     | media-api, Docker | MinIO access key            |
+| `MINIO_ROOT_PASSWORD` | media-api, Docker | MinIO secret key            |
+| `MINIO_ENDPOINT`      | media-api         | MinIO host (Docker network) |
+| `USERS_API_URL`       | auth-api          | Call users-api on signup    |
+| `VITE_*_API_URL`      | web-app           | Frontend API base URLs      |
 
-| Variable                | Service        | Used For                   |
-| ----------------------- | -------------- | -------------------------- |
-| `MONGO_INITDB_DATABASE` | Docker Compose | Initial DB name            |
-| `MONGO_URI`             | All APIs       | MongoDB connection string  |
-| `JWT_SECRET`            | All APIs       | Sign/verify JWT tokens     |
-| `USERS_API_URL`         | auth-api       | Profile creation on signup |
-| `VITE_AUTH_API_URL`     | web-app        | Auth API base URL          |
-| `VITE_USERS_API_URL`    | web-app        | Users API base URL         |
-| `VITE_POSTS_API_URL`    | web-app        | Posts API base URL         |
+### Run with Docker
 
-### Kubernetes Deployment
+```bash
+npm run dev:docker       # Start all services with hot-reload
+npm run dev:docker:down  # Stop and remove volumes
+```
+
+**Services:**
+
+| Service       | URL                         |
+| ------------- | --------------------------- |
+| Web App       | `http://localhost:5173`     |
+| Auth API      | `http://localhost:3000/api` |
+| Posts API     | `http://localhost:3001/api` |
+| Users API     | `http://localhost:3002/api` |
+| Media API     | `http://localhost:3003/api` |
+| MinIO API     | `http://localhost:9000`     |
+| MinIO Console | `http://localhost:9001`     |
+
+---
+
+## 📦 Nx Commands
+
+```bash
+npx nx graph                              # Visualize dependencies
+npx nx serve auth-api                     # Serve a specific app
+npx nx serve web-app
+npx nx build auth-api                     # Build a specific app
+npx nx run-many --target=build --all      # Build all apps
+npx nx lint auth-api --fix                # Lint with auto-fix
+npx nx test auth-api --coverage           # Run tests with coverage
+npx nx affected --targets=build,lint,test # CI — run only affected
+```
+
+---
+
+## 🚢 Production Deployment
+
+### Docker Compose
+
+```bash
+npm run prod:docker       # Start (pre-built Docker Hub images)
+npm run prod:docker:down  # Stop
+```
+
+### Kubernetes
 
 ```bash
 kubectl apply -f k8s/
 kubectl get pods -n social-media-monorepo
 ```
 
-K8s resources: Namespace, ConfigMap, Secret, Deployments, ClusterIP Services, MongoDB StatefulSet, Nginx Ingress.
-
-**Kubernetes files:**
-
-- [k8s/namespace.yaml](k8s/namespace.yaml)
-- [k8s/configmap.yaml](k8s/configmap.yaml)
-- [k8s/secret.yaml](k8s/secret.yaml)
-- [k8s/ingress.yaml](k8s/ingress.yaml)
-- [k8s/auth-api/deployment.yaml](k8s/auth-api/deployment.yaml)
-- [k8s/posts-api/deployment.yaml](k8s/posts-api/deployment.yaml)
-- [k8s/users-api/deployment.yaml](k8s/users-api/deployment.yaml)
-- [k8s/web-app/deployment.yaml](k8s/web-app/deployment.yaml)
-- [k8s/mongo-db/statefulset.yaml](k8s/mongo-db/statefulset.yaml)
-
 ### CI/CD (GitHub Actions)
 
-Workflow on push to `main` (`.github/workflows/main.yaml`):
+On push to `main` (`.github/workflows/main.yaml`):
 
-1. Bumps semantic version and creates GitHub Release
-2. Builds and pushes all Docker images to Docker Hub in parallel
+1. Bumps semantic version, creates GitHub Release
+2. Builds and pushes Docker images to Docker Hub in parallel
 3. Tags with version number and `latest`
 
 Required secrets: `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN`
@@ -744,20 +381,10 @@ Docker images:
 - `prathoreme/social-media-monorepo-auth-api`
 - `prathoreme/social-media-monorepo-posts-api`
 - `prathoreme/social-media-monorepo-users-api`
+- `prathoreme/social-media-monorepo-media-api`
 - `prathoreme/social-media-monorepo-web-app`
 
-## 📦 Running Nx Tasks
-
-```bash
-npx nx graph                              # Visualize project dependencies
-npx nx serve auth-api                     # Serve a specific app
-npx nx serve web-app
-npx nx build auth-api                     # Build a specific app
-npx nx run-many --target=build --all      # Build all apps
-npx nx lint auth-api --fix                # Lint with auto-fix
-npx nx test auth-api --coverage           # Run tests with coverage
-npx nx affected --targets=build,lint,test # Run only affected projects (CI)
-```
+---
 
 ## 📂 Development Workflow
 
@@ -786,14 +413,14 @@ newFeature(@Body() dto: NewFeatureDto, @CurrentUser() user: any) {
 ### Adding a new frontend page
 
 ```typescript
-// 1. Create page component
+// 1. Create page
 // apps/web-app/src/pages/NewPage.tsx
 export default function NewPage() { ... }
 
 // 2. Add route in app.tsx
 <Route path="/new" element={<ProtectedRoute><NewPage /></ProtectedRoute>} />
 
-// 3. Add API call if needed
+// 3. Add API call
 // apps/web-app/src/api/posts.api.ts
 export const newFeature = async (data: any) => {
   const res = await api.post(`${POSTS_API_URL}/posts/new-feature`, data);
@@ -804,48 +431,57 @@ export const newFeature = async (data: any) => {
 ### Debugging
 
 ```bash
-docker logs -f sm-auth-api-container   # Backend logs
+docker logs -f sm-auth-api-container
 docker logs -f sm-posts-api-container
 docker logs -f sm-users-api-container
-docker exec -it sm-mongodb-container mongosh  # MongoDB shell
+docker logs -f sm-media-api-container
+docker exec -it sm-mongodb-container mongosh
 ```
 
-Frontend: Open DevTools (F12) → Console + Network tabs.
+Frontend: DevTools (F12) → Console + Network tabs.
+
+---
 
 ## 🔄 Service Communication
 
-1. **Browser → Web App** — User interacts with React UI
-2. **Web App → Auth API** — `http://localhost:3000/api/auth` (JWT in header)
-3. **Web App → Posts API** — `http://localhost:3001/api/posts` (JWT in header)
-4. **Web App → Users API** — `http://localhost:3002/api/profiles` (JWT in header)
-5. **Auth API → Users API** — `http://users-api:3000/api/profiles` (Docker network, no JWT)
-6. **All APIs → MongoDB** — `mongodb://mongodb:27017/social-media-monorepo-db`
+1. **Browser → Web App** — React UI
+2. **Web App → Auth API** — `http://localhost:3000/api/auth` (JWT)
+3. **Web App → Posts API** — `http://localhost:3001/api/posts` (JWT)
+4. **Web App → Users API** — `http://localhost:3002/api/profiles` (JWT)
+5. **Web App → Media API** — `http://localhost:3003/api/media` (JWT, multipart)
+6. **Auth API → Users API** — `http://users-api:3000/api/profiles` (Docker network)
+7. **Media API → MinIO** — `http://minio:9000` (Docker network, S3 SDK)
+8. **All APIs → MongoDB** — `mongodb://mongodb:27017/social-media-monorepo-db`
+
+---
 
 ## 🗂️ Key Files Reference
 
-| File                          | Purpose                                  |
-| ----------------------------- | ---------------------------------------- |
-| `nx.json`                     | Nx workspace config                      |
-| `package.json`                | Dependencies and npm scripts             |
-| `tsconfig.base.json`          | Base TypeScript config with path aliases |
-| `.env.example`                | Environment variables template           |
-| `docker-compose.dev.yaml`     | Local development with hot-reload        |
-| `docker-compose.yaml`         | Production deployment                    |
-| `k8s/`                        | Kubernetes manifests                     |
-| `.github/workflows/main.yaml` | CI/CD pipeline                           |
-| `eslint.config.mjs`           | ESLint configuration                     |
-| `.prettierrc`                 | Prettier formatting config               |
+| File                          | Purpose                             |
+| ----------------------------- | ----------------------------------- |
+| `nx.json`                     | Nx workspace config                 |
+| `package.json`                | Dependencies and npm scripts        |
+| `tsconfig.base.json`          | TypeScript config with path aliases |
+| `.env.example`                | Environment variables template      |
+| `docker-compose.dev.yaml`     | Local dev with hot-reload           |
+| `docker-compose.yaml`         | Production deployment               |
+| `k8s/`                        | Kubernetes manifests                |
+| `.github/workflows/main.yaml` | CI/CD pipeline                      |
+
+---
 
 ## 💡 Tips for AI Code Generation
 
 ✅ `"In apps/posts-api/src/posts/posts.service.ts, add pagination to getFeed() with skip and limit params"`
 ❌ `"Add pagination"`
 
-✅ Paste full error stack traces from terminal or browser console
+✅ Paste full error stack traces
 ❌ `"There's an error"`
 
 ✅ Reference exact file paths: `libs/shared/dto/src/lib/signup.dto.ts`
 ❌ `"the dto file"`
+
+---
 
 ## 📊 Quick Reference
 
@@ -856,9 +492,11 @@ Frontend: Open DevTools (F12) → Console + Network tabs.
 | User Auth           | `apps/auth-api/src/auth/*`, `libs/shared/auth-utils/src/*`                       |
 | Profiles            | `apps/users-api/src/profiles/*`, `libs/shared/schemas/src/lib/profile.schema.ts` |
 | Posts               | `apps/posts-api/src/posts/*`, `libs/shared/schemas/src/lib/post.schema.ts`       |
+| Media Upload        | `apps/media-api/src/media/*`                                                     |
 | Frontend Pages      | `apps/web-app/src/pages/*`                                                       |
 | Frontend Components | `apps/web-app/src/components/{layout,post,profile,ui}/*`                         |
 | Frontend Hooks      | `apps/web-app/src/hooks/*`                                                       |
+| Frontend API        | `apps/web-app/src/api/*`                                                         |
 | Global Auth State   | `apps/web-app/src/context/AuthContext.tsx`                                       |
 | Types               | `apps/web-app/src/types/index.ts`                                                |
 | DTOs                | `libs/shared/dto/src/lib/*`                                                      |
@@ -866,18 +504,21 @@ Frontend: Open DevTools (F12) → Console + Network tabs.
 
 ### Common Commands
 
-| Task              | Command                                        |
-| ----------------- | ---------------------------------------------- |
-| Start dev         | `npm run dev:docker`                           |
-| Stop dev          | `npm run dev:docker:down`                      |
-| Start prod        | `npm run prod:docker`                          |
-| Stop prod         | `npm run prod:docker:down`                     |
-| View dependencies | `npx nx graph`                                 |
-| Serve app         | `npx nx serve web-app`                         |
-| Build app         | `npx nx build auth-api`                        |
-| Lint              | `npx nx lint auth-api --fix`                   |
-| Test              | `npx nx test auth-api`                         |
-| Check DB          | `docker exec -it sm-mongodb-container mongosh` |
+| Task              | Command                                            |
+| ----------------- | -------------------------------------------------- |
+| Start dev         | `npm run dev:docker`                               |
+| Stop dev          | `npm run dev:docker:down`                          |
+| Start prod        | `npm run prod:docker`                              |
+| Stop prod         | `npm run prod:docker:down`                         |
+| View dependencies | `npx nx graph`                                     |
+| Serve app         | `npx nx serve web-app`                             |
+| Build app         | `npx nx build auth-api`                            |
+| Lint              | `npx nx lint auth-api --fix`                       |
+| Test              | `npx nx test auth-api`                             |
+| Check DB          | `docker exec -it sm-mongodb-container mongosh`     |
+| MinIO console     | `http://localhost:9001` (minioadmin/minioadmin123) |
+
+---
 
 ## 📝 Important Notes
 
@@ -885,11 +526,15 @@ Frontend: Open DevTools (F12) → Console + Network tabs.
 - **CORS** is enabled on all backend services
 - **Global ValidationPipe** enforces DTO validation on all requests
 - **Nx daemon** (`NX_DAEMON=true`) is required inside Docker for hot-reload
-- **Service-to-service** communication uses Docker network hostnames (e.g., `http://users-api:3000`)
-- **Frontend-to-backend** uses localhost in dev (e.g., `http://localhost:3000`)
-- **Production web-app** uses Nginx with `entrypoint.sh` for runtime env var injection
+- **Service-to-service** communication uses Docker network hostnames
+- **Frontend-to-backend** uses localhost in dev
+- **MinIO** is S3-compatible — swap for AWS S3 in production with zero code changes
+- **Media buckets** are public — files are accessible directly via URL
+- **Production web-app** uses Nginx + `entrypoint.sh` for runtime env var injection
 - **MongoDB** runs as `mongo:8.0` with persistent `mongo_data` volume
-- **Password hashing** uses bcrypt with 10 salt rounds
+- **MinIO** persists data in `minio_data` volume
+
+---
 
 ## 📞 Support & Resources
 
@@ -897,5 +542,9 @@ Frontend: Open DevTools (F12) → Console + Network tabs.
 - [NestJS Docs](https://docs.nestjs.com)
 - [React Docs](https://react.dev)
 - [Mongoose Docs](https://mongoosejs.com)
+- [MinIO Docs](https://min.io/docs)
 - [JWT](https://jwt.io)
-- [Passport.js](http://www.passportjs.org)
+
+---
+
+**Last Updated:** March 2026 | **Version:** 1.0.0 | **Status:** Active Development
