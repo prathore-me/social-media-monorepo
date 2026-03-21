@@ -25,6 +25,11 @@ spec:
                 configMapKeyRef:
                   name: social-media-monorepo-configmap
                   key: VITE_AUTH_API_URL
+            - name: VITE_POSTS_API_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: social-media-monorepo-configmap
+                  key: VITE_POSTS_API_URL
             - name: VITE_USERS_API_URL
               valueFrom:
                 configMapKeyRef:
