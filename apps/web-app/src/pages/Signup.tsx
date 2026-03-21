@@ -1,67 +1,67 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
-import { AUTH_API_URL } from '../config/api';
+import { Link, useNavigate } from 'react-router-dom';
+import { signup } from '../api/auth.api';
+import toast from 'react-hot-toast';
 
 export default function Signup() {
-  const [formData, setFormData] = useState({ email: '', username: '', password: '' });
-  const [error, setError] = useState('');
   const navigate = useNavigate();
+  const [form, setForm] = useState({ email: '', username: '', password: '' });
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     try {
-      await axios.post(`${AUTH_API_URL}/signup`, formData);
-      alert('Account created! Please login.');
+      await signup(form.email, form.username, form.password);
+      toast.success('Account created! Please log in.');
       navigate('/login');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Signup failed');
+      const msg = err.response?.data?.message;
+      toast.error(Array.isArray(msg) ? msg[0] : msg || 'Signup failed');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[80vh]">
-      <div className="bg-white p-8 border border-gray-300 w-96 rounded-sm">
-        <h1 className="text-3xl font-serif text-center mb-8">Instagram</h1>
-
-        {error && <p className="text-red-500 text-sm text-center mb-4">{error}</p>}
-
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center">
+      <div className="bg-white border border-gray-200 p-8 w-full max-w-sm">
+        <h1 className="text-4xl font-bold italic font-serif text-center mb-2">Instagram</h1>
+        <p className="text-gray-500 text-center text-sm mb-6">Sign up to see photos from your friends.</p>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-2">
           <input
             type="email"
             placeholder="Email"
-            className="bg-gray-50 border border-gray-300 p-2 text-sm rounded-sm outline-none focus:border-gray-400"
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
+            className="bg-gray-50 border border-gray-300 rounded-sm p-2.5 text-sm outline-none focus:border-gray-400"
             required
           />
           <input
             type="text"
             placeholder="Username"
-            className="bg-gray-50 border border-gray-300 p-2 text-sm rounded-sm outline-none focus:border-gray-400"
-            onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+            onChange={(e) => setForm({ ...form, username: e.target.value })}
+            className="bg-gray-50 border border-gray-300 rounded-sm p-2.5 text-sm outline-none focus:border-gray-400"
             required
           />
           <input
             type="password"
             placeholder="Password"
-            className="bg-gray-50 border border-gray-300 p-2 text-sm rounded-sm outline-none focus:border-gray-400"
-            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
+            className="bg-gray-50 border border-gray-300 rounded-sm p-2.5 text-sm outline-none focus:border-gray-400"
             required
           />
           <button
             type="submit"
-            className="bg-blue-500 text-white font-semibold py-1.5 rounded-md mt-2 hover:bg-blue-600"
+            disabled={loading}
+            className="bg-blue-500 text-white font-semibold py-2 rounded-lg mt-2 hover:bg-blue-600 disabled:opacity-60 transition"
           >
-            Sign Up
+            {loading ? 'Signing up...' : 'Sign up'}
           </button>
         </form>
       </div>
-
-      <div className="bg-white p-6 border border-gray-300 w-96 mt-4 text-center text-sm">
+      <div className="bg-white border border-gray-200 p-4 w-full max-w-sm mt-2 text-center text-sm">
         Have an account?{' '}
-        <Link to="/login" className="text-blue-500 font-semibold">
-          Log In
-        </Link>
+        <Link to="/login" className="text-blue-500 font-semibold">Log in</Link>
       </div>
     </div>
   );

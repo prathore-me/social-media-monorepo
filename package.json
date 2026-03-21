@@ -60,6 +60,7 @@
     "@nestjs/mongoose": "^11.0.4",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.0.0",
+    "@tailwindcss/vite": "^4.2.2",
     "axios": "^1.13.2",
     "bcrypt": "^6.0.0",
     "class-transformer": "^0.5.1",
@@ -72,8 +73,10 @@
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-hook-form": "^7.69.0",
+    "react-hot-toast": "^2.6.0",
     "react-router-dom": "^6.29.0",
     "reflect-metadata": "^0.1.13",
-    "rxjs": "^7.8.0"
+    "rxjs": "^7.8.0",
+    "tailwindcss": "^4.2.2"
   }
 }
