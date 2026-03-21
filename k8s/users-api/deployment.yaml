@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: users-api-container
-          image: prathoreme/social-media-monorepo-users-api:v0.2.4
+          image: prathoreme/social-media-monorepo-users-api:latest
           imagePullPolicy: Always
           envFrom:
             - secretRef:

@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: auth-api-container
-          image: prathoreme/social-media-monorepo-auth-api:v0.2.4
+          image: prathoreme/social-media-monorepo-auth-api:latest
           imagePullPolicy: Always
           envFrom:
             - secretRef:
