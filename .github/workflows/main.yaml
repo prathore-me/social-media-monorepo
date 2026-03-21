@@ -54,6 +54,8 @@ jobs:
             dockerfile: apps/posts-api/Dockerfile
           - service: users-api
             dockerfile: apps/users-api/Dockerfile
+          - service: media-api
+            dockerfile: apps/media-api/Dockerfile
           - service: web-app
             dockerfile: apps/web-app/Dockerfile
 
@@ -88,6 +90,7 @@ jobs:
             VITE_AUTH_API_URL=REPLACE_WITH_VITE_AUTH_API_URL
             VITE_USERS_API_URL=REPLACE_WITH_VITE_USERS_API_URL
             VITE_POSTS_API_URL=REPLACE_WITH_VITE_POSTS_API_URL
+            VITE_MEDIA_API_URL=REPLACE_WITH_VITE_MEDIA_API_URL
           tags: |
             docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:${{ needs.tag-and-release.outputs.new_tag }}
             docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:latest
