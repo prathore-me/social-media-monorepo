@@ -63,14 +63,20 @@ export class MediaService implements OnModuleInit {
       { 'Content-Type': file.mimetype },
     );
 
-    const endpoint = process.env['MINIO_ENDPOINT'] || 'localhost';
-    const port = process.env['MINIO_PORT'] || '9000';
-    const useSSL = process.env['MINIO_USE_SSL'] === 'true';
-    const protocol = useSSL ? 'https' : 'http';
+    // Use PUBLIC_STORAGE_URL if set (for K8s/prod), otherwise fallback to direct MinIO URL
+    const publicStorageUrl = process.env['PUBLIC_STORAGE_URL'];
 
-    // In dev, use localhost. In prod, use the endpoint directly
-    const host = endpoint === 'minio' ? 'localhost' : endpoint;
-    const url = `${protocol}://${host}:${port}/${bucket}/${filename}`;
+    let url: string;
+    if (publicStorageUrl) {
+      url = `${publicStorageUrl}/${bucket}/${filename}`;
+    } else {
+      const endpoint = process.env['MINIO_ENDPOINT'] || 'localhost';
+      const port = process.env['MINIO_PORT'] || '9000';
+      const useSSL = process.env['MINIO_USE_SSL'] === 'true';
+      const protocol = useSSL ? 'https' : 'http';
+      const host = endpoint === 'minio' ? 'localhost' : endpoint;
+      url = `${protocol}://${host}:${port}/${bucket}/${filename}`;
+    }
 
     return { url };
   }
