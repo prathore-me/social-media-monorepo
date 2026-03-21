@@ -899,7 +899,3 @@ Frontend: Open DevTools (F12) → Console + Network tabs.
 - [Mongoose Docs](https://mongoosejs.com)
 - [JWT](https://jwt.io)
 - [Passport.js](http://www.passportjs.org)
-
----
-
-**Last Updated:** March 2026 | **Version:** 1.0.0 | **Status:** Active Development
