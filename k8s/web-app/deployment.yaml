@@ -35,6 +35,11 @@ spec:
                 configMapKeyRef:
                   name: social-media-monorepo-configmap
                   key: VITE_USERS_API_URL
+            - name: VITE_MEDIA_API_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: social-media-monorepo-configmap
+                  key: VITE_MEDIA_API_URL
           ports:
             - containerPort: 80
           resources:
