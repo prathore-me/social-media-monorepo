@@ -22,19 +22,25 @@ export default function PostCard({ post, onDelete, onUpdate }: PostCardProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const isMyPost = user?.id === post.userId;
-  const isLiked = user ? post.likes.includes(user.userId) : false;
+  // Local like state for instant UI feedback
+  const [isLiked, setIsLiked] = useState(user ? post.likes.includes(user.userId) : false);
+  const [likesCount, setLikesCount] = useState(post.likes.length);
+
+  const isMyPost = user?.userId === post.userId;
 
   const handleLike = async () => {
+    // Optimistic update — change UI immediately
+    setIsLiked((prev) => !prev);
+    setLikesCount((prev) => (isLiked ? prev - 1 : prev + 1));
+
     try {
       const res = await toggleLike(post._id);
-      onUpdate({
-        ...post,
-        likes: res.liked
-          ? [...post.likes, user!.id]
-          : post.likes.filter((id) => id !== user!.id),
-      });
+      setIsLiked(res.liked);
+      setLikesCount(res.likesCount);
     } catch {
+      // Revert on failure
+      setIsLiked((prev) => !prev);
+      setLikesCount((prev) => (isLiked ? prev + 1 : prev - 1));
       toast.error('Failed to like post');
     }
   };
@@ -95,13 +101,19 @@ export default function PostCard({ post, onDelete, onUpdate }: PostCardProps) {
         </Link>
         {isMyPost && (
           <div className="relative">
-            <button onClick={() => setShowMenu(!showMenu)} className="text-gray-500 hover:text-black">
+            <button
+              onClick={() => setShowMenu(!showMenu)}
+              className="text-gray-500 hover:text-black"
+            >
               <MoreHorizontal size={20} />
             </button>
             {showMenu && (
               <div className="absolute right-0 top-6 bg-white border border-gray-200 rounded-lg shadow-lg z-10 overflow-hidden">
                 <button
-                  onClick={() => { setIsEditing(true); setShowMenu(false); }}
+                  onClick={() => {
+                    setIsEditing(true);
+                    setShowMenu(false);
+                  }}
                   className="block w-full px-4 py-2 text-sm text-left hover:bg-gray-50"
                 >
                   Edit caption
@@ -124,11 +136,8 @@ export default function PostCard({ post, onDelete, onUpdate }: PostCardProps) {
       {/* Actions */}
       <div className="p-3">
         <div className="flex items-center gap-4 mb-2">
-          <button onClick={handleLike} className="transition">
-            <Heart
-              size={24}
-              className={isLiked ? 'fill-red-500 text-red-500' : 'text-gray-800'}
-            />
+          <button onClick={handleLike} className="transition active:scale-110">
+            <Heart size={24} className={isLiked ? 'fill-red-500 text-red-500' : 'text-gray-800'} />
           </button>
           <button onClick={() => setShowComments(!showComments)}>
             <MessageCircle size={24} className="text-gray-800" />
@@ -136,8 +145,10 @@ export default function PostCard({ post, onDelete, onUpdate }: PostCardProps) {
         </div>
 
         {/* Likes */}
-        {post.likes.length > 0 && (
-          <p className="text-sm font-semibold mb-1">{post.likes.length} {post.likes.length === 1 ? 'like' : 'likes'}</p>
+        {likesCount > 0 && (
+          <p className="text-sm font-semibold mb-1">
+            {likesCount} {likesCount === 1 ? 'like' : 'likes'}
+          </p>
         )}
 
         {/* Caption */}
@@ -148,13 +159,19 @@ export default function PostCard({ post, onDelete, onUpdate }: PostCardProps) {
               onChange={(e) => setEditCaption(e.target.value)}
               className="flex-1 border rounded p-1 text-sm outline-none"
             />
-            <button onClick={handleUpdate} className="text-green-600"><Check size={18} /></button>
-            <button onClick={() => setIsEditing(false)} className="text-gray-500"><X size={18} /></button>
+            <button onClick={handleUpdate} className="text-green-600">
+              <Check size={18} />
+            </button>
+            <button onClick={() => setIsEditing(false)} className="text-gray-500">
+              <X size={18} />
+            </button>
           </div>
         ) : (
           post.caption && (
             <p className="text-sm">
-              <Link to={`/profile/${post.username}`} className="font-semibold mr-2">{post.username}</Link>
+              <Link to={`/profile/${post.username}`} className="font-semibold mr-2">
+                {post.username}
+              </Link>
               {post.caption}
             </p>
           )
@@ -180,7 +197,7 @@ export default function PostCard({ post, onDelete, onUpdate }: PostCardProps) {
                   </Link>
                   {comment.text}
                 </p>
-                {user?.id === comment.userId && (
+                {user?.userId === comment.userId && (
                   <button
                     onClick={() => handleDeleteComment(comment._id)}
                     className="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition"
