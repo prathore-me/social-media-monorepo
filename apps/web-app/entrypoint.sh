@@ -11,6 +11,7 @@ for file in /usr/share/nginx/html/assets/*.js; do
   sed -i "s|REPLACE_WITH_VITE_AUTH_API_URL|${VITE_AUTH_API_URL}|g" "$file"
   sed -i "s|REPLACE_WITH_VITE_USERS_API_URL|${VITE_USERS_API_URL}|g" "$file"
   sed -i "s|REPLACE_WITH_VITE_POSTS_API_URL|${VITE_POSTS_API_URL}|g" "$file"
+  sed -i "s|REPLACE_WITH_VITE_MEDIA_API_URL|${VITE_MEDIA_API_URL}|g" "$file"
 done
 
 # Hand off to the original Nginx command

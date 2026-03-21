@@ -1,7 +1,7 @@
 import { IsNotEmpty, IsString, IsOptional, IsUrl } from 'class-validator';
 
 export class CreatePostDto {
-  @IsUrl()
+  @IsUrl({ require_tld: false }) // require_tld: false allows localhost URLs
   @IsNotEmpty()
   imageUrl: string;
 

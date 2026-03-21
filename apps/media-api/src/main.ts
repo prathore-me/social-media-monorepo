@@ -7,9 +7,9 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
   app.useGlobalPipes(new ValidationPipe());
   app.enableCors();
-  const port = process.env.PORT || 3000;
+  const port = process.env.PORT || 3003;
   await app.listen(port);
-  Logger.log(`🚀 Posts API is running on: http://localhost:${port}/api`);
+  Logger.log(`🚀 Media API running on: http://localhost:${port}/api`);
 }
 
 bootstrap();

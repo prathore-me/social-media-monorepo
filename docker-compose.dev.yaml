@@ -9,6 +9,38 @@ services:
     environment:
       - MONGO_INITDB_DATABASE=${MONGO_INITDB_DATABASE}
 
+  minio:
+    image: minio/minio:latest
+    container_name: sm-minio-container
+    command: server /data --console-address ":9001"
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+    ports:
+      - '9000:9000' # API
+      - '9001:9001' # Web console
+    volumes:
+      - minio_data:/data
+    restart: unless-stopped
+
+  minio-init:
+    image: minio/mc:latest
+    container_name: sm-minio-init-container
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      sleep 5;
+      mc alias set local http://minio:9000 $${MINIO_ROOT_USER} $${MINIO_ROOT_PASSWORD};
+      mc mb --ignore-existing local/posts-images;
+      mc mb --ignore-existing local/profile-pictures;
+      mc mb --ignore-existing local/videos;
+      mc anonymous set public local/posts-images;
+      mc anonymous set public local/profile-pictures;
+      mc anonymous set public local/videos;
+      echo 'MinIO buckets ready';
+      "
+
   auth-api:
     container_name: sm-auth-api-container
     build:
@@ -79,6 +111,33 @@ services:
     depends_on:
       - mongodb
 
+  media-api:
+    container_name: sm-media-api-container
+    build:
+      context: .
+      dockerfile: apps/media-api/Dockerfile
+      target: development
+    environment:
+      - PORT=3000
+      - JWT_SECRET=${JWT_SECRET}
+      - MINIO_ENDPOINT=minio
+      - MINIO_PORT=9000
+      - MINIO_USE_SSL=false
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+      - NX_DAEMON=true
+    ports:
+      - '3003:3000'
+    volumes:
+      - ./apps/media-api:/usr/src/app/apps/media-api:delegated
+      - ./libs:/usr/src/app/libs:delegated
+      - ./package.json:/usr/src/app/package.json:delegated
+      - ./nx.json:/usr/src/app/nx.json:delegated
+      - ./tsconfig.base.json:/usr/src/app/tsconfig.base.json:delegated
+      - media_api_node_modules:/usr/src/app/node_modules
+    depends_on:
+      - minio
+
   web-app:
     container_name: sm-web-app-container
     build:
@@ -89,6 +148,7 @@ services:
         - VITE_AUTH_API_URL=${VITE_AUTH_API_URL}
         - VITE_USERS_API_URL=${VITE_USERS_API_URL}
         - VITE_POSTS_API_URL=${VITE_POSTS_API_URL}
+        - VITE_MEDIA_API_URL=${VITE_MEDIA_API_URL}
     ports:
       - '5173:5173'
     volumes:
@@ -107,5 +167,7 @@ volumes:
   auth_api_node_modules:
   posts_api_node_modules:
   users_api_node_modules:
+  media_api_node_modules:
   web_app_node_modules:
   mongo_data:
+  minio_data:
