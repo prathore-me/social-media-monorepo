@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: media-api-service
+  namespace: social-media-monorepo
+  labels:
+    app: media-api
+spec:
+  selector:
+    app: media-api
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+  type: ClusterIP
