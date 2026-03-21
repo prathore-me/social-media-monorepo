@@ -89,11 +89,14 @@ apps/                                    # Independently deployable applications
     │   │   ├── Profile.tsx            # User profile view (posts, bio, followers)
     │   │   └── EditProfile.tsx        # Profile editor (bio, avatar)
     │   ├── components/                # Reusable UI components
-    │   │   ├── Navbar.tsx             # Navigation header with user menu
-    │   │   ├── PostCard.tsx           # Single post display with like/comment UI
-    │   │   ├── CreatePost.tsx         # New post form modal
-    │   │   ├── UserListModal.tsx      # User discovery/search modal
-    │   │   └── Spinner.tsx            # Loading indicator
+    │   │   ├── layout/                # Layout components
+    │   │   │   └── Navbar.tsx         # Navigation header with user menu
+    │   │   ├── post/                  # Post-related components
+    │   │   │   ├── PostCard.tsx       # Single post display with like/comment UI
+    │   │   │   └── CreatePostModal.tsx # New post form modal
+    │   │   ├── profile/               # Profile-related components
+    │   │   └── ui/                    # UI utility components
+    │   │       └── Spinner.tsx        # Loading indicator
     │   ├── hooks/                     # Custom React hooks
     │   │   ├── usePosts.ts            # Post management (fetch, create, update, delete)
     │   │   └── useProfile.ts          # Profile management (fetch, update, follow)
@@ -956,8 +959,9 @@ VITE_POSTS_API_URL=http://localhost:3001
 | `MONGO_URI`             | All backend APIs | MongoDB connection         | `mongodb://mongodb:27017/...` |
 | `JWT_SECRET`            | All backend APIs | Sign/verify JWT tokens     | `your-secret-key`             |
 | `USERS_API_URL`         | auth-api         | Profile creation on signup | `http://users-api:3000`       |
-| `POSTS_API_URL`         | web-app          | Posts API base URL         | `http://localhost:3001`       |
-| `VITE_*_API_URL`        | web-app build    | Frontend API URLs          | `http://localhost:3000`       |
+| `VITE_AUTH_API_URL`     | web-app build    | Frontend Auth API URL      | `http://localhost:3000`       |
+| `VITE_USERS_API_URL`    | web-app build    | Frontend Users API URL     | `http://localhost:3002`       |
+| `VITE_POSTS_API_URL`    | web-app build    | Frontend Posts API URL     | `http://localhost:3001`       |
 
 ### Kubernetes Deployment
 
