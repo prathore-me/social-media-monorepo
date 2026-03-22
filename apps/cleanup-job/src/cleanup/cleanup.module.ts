@@ -2,9 +2,12 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CleanupService } from './cleanup.service';
 import {
-  Post, PostSchema,
-  User, UserSchema,
-  Profile, ProfileSchema,
+  Post,
+  PostSchema,
+  User,
+  UserSchema,
+  Profile,
+  ProfileSchema,
 } from '@social-media-monorepo/shared-schemas';
 
 @Module({
