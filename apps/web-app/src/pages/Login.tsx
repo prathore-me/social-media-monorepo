@@ -29,7 +29,9 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center">
       <div className="bg-white border border-gray-200 p-8 w-full max-w-sm">
-        <h1 className="text-4xl font-bold italic font-serif text-center mb-8">Instagram</h1>
+        <h1 className="text-4xl font-bold italic font-serif text-center mb-8">
+          Social Media Platform
+        </h1>
         <form onSubmit={handleSubmit} className="flex flex-col gap-2">
           <input
             type="email"

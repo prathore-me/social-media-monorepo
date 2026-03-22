@@ -26,8 +26,12 @@ export default function Signup() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center">
       <div className="bg-white border border-gray-200 p-8 w-full max-w-sm">
-        <h1 className="text-4xl font-bold italic font-serif text-center mb-2">Instagram</h1>
-        <p className="text-gray-500 text-center text-sm mb-6">Sign up to see photos from your friends.</p>
+        <h1 className="text-4xl font-bold italic font-serif text-center mb-2">
+          Social Media Platform
+        </h1>
+        <p className="text-gray-500 text-center text-sm mb-6">
+          Sign up to see photos from your friends.
+        </p>
         <form onSubmit={handleSubmit} className="flex flex-col gap-2">
           <input
             type="email"
@@ -61,7 +65,9 @@ export default function Signup() {
       </div>
       <div className="bg-white border border-gray-200 p-4 w-full max-w-sm mt-2 text-center text-sm">
         Have an account?{' '}
-        <Link to="/login" className="text-blue-500 font-semibold">Log in</Link>
+        <Link to="/login" className="text-blue-500 font-semibold">
+          Log in
+        </Link>
       </div>
     </div>
   );

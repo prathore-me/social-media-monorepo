@@ -59,7 +59,7 @@ export default function Navbar({ onPostCreated }: NavbarProps) {
       <nav className="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-40 h-14">
         <div className="max-w-4xl mx-auto h-full px-4 flex items-center justify-between">
           <Link to="/" className="text-xl font-bold italic font-serif">
-            Instagram
+            Social Media Platform
           </Link>
 
           {/* Search */}
@@ -81,13 +81,18 @@ export default function Navbar({ onPostCreated }: NavbarProps) {
                   <Link
                     key={profile._id}
                     to={`/profile/${profile.username}`}
-                    onClick={() => { setShowSearch(false); setSearchQuery(''); }}
+                    onClick={() => {
+                      setShowSearch(false);
+                      setSearchQuery('');
+                    }}
                     className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50"
                   >
                     <Avatar src={profile.profilePic} username={profile.username} size="sm" />
                     <div>
                       <p className="text-sm font-semibold">{profile.username}</p>
-                      {profile.bio && <p className="text-xs text-gray-400 truncate w-44">{profile.bio}</p>}
+                      {profile.bio && (
+                        <p className="text-xs text-gray-400 truncate w-44">{profile.bio}</p>
+                      )}
                     </div>
                   </Link>
                 ))}
@@ -97,7 +102,9 @@ export default function Navbar({ onPostCreated }: NavbarProps) {
 
           {/* Icons */}
           <div className="flex items-center gap-5">
-            <Link to="/"><Home size={22} /></Link>
+            <Link to="/">
+              <Home size={22} />
+            </Link>
             <button onClick={() => setShowCreatePost(true)}>
               <PlusSquare size={22} />
             </button>
