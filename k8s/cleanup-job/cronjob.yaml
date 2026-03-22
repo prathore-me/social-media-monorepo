@@ -1,0 +1,25 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cleanup-job
+  namespace: social-media-monorepo
+spec:
+  schedule: "0 2 * * *"    # runs daily at 2am
+  concurrencyPolicy: Forbid # prevent overlapping runs
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: cleanup-job
+              image: prathoreme/social-media-monorepo-cleanup-job:latest
+              imagePullPolicy: Always
+              env:
+                - name: MONGO_URI
+                  valueFrom:
+                    secretKeyRef:
+                      name: social-media-monorepo-secrets
+                      key: MONGO_URI

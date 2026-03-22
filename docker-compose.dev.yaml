@@ -163,6 +163,33 @@ services:
       - posts-api
       - users-api
 
+  cleanup-job:
+    container_name: sm-cleanup-job-container
+    build:
+      context: .
+      dockerfile: apps/cleanup-job/Dockerfile
+      target: development
+    environment:
+      - MONGO_URI=${MONGO_URI}
+    depends_on:
+      - mongodb
+    profiles:
+      - cleanup
+
+  ofelia:
+    image: mcuadros/ofelia:latest
+    container_name: sm-ofelia-container
+    depends_on:
+      - cleanup-job
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command: daemon --docker
+    labels:
+      ofelia.job-run.cleanup.schedule: '@every 24h'
+      ofelia.job-run.cleanup.container: 'sm-cleanup-job-container'
+    profiles:
+      - cleanup
+
 volumes:
   auth_api_node_modules:
   posts_api_node_modules:

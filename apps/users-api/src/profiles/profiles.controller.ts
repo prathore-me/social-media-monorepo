@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Post,
@@ -47,5 +48,11 @@ export class ProfilesController {
   @Post(':userId/follow')
   toggleFollow(@Param('userId') targetUserId: string, @CurrentUser() user: any) {
     return this.profilesService.toggleFollow(targetUserId, user.userId);
+  }
+
+  // Called internally by auth-api when user deletes account
+  @Delete(':userId')
+  softDelete(@Param('userId') userId: string) {
+    return this.profilesService.softDelete(userId);
   }
 }

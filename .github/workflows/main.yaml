@@ -58,6 +58,8 @@ jobs:
             dockerfile: apps/media-api/Dockerfile
           - service: web-app
             dockerfile: apps/web-app/Dockerfile
+          - service: cleanup-job
+            dockerfile: apps/cleanup-job/Dockerfile
 
     steps:
       - name: Checkout

@@ -121,6 +121,30 @@ services:
       - '80:80'
     restart: always
 
+  cleanup-job:
+    container_name: sm-cleanup-job-container
+    image: prathoreme/social-media-monorepo-cleanup-job:latest
+    pull_policy: always
+    environment:
+      - MONGO_URI=${MONGO_URI}
+    depends_on:
+      - mongodb
+    profiles:
+      - cleanup
+
+  ofelia:
+    image: mcuadros/ofelia:latest
+    container_name: sm-ofelia-container
+    restart: always
+    depends_on:
+      - cleanup-job
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command: daemon --docker
+    labels:
+      ofelia.job-run.cleanup.schedule: '0 2 * * *'
+      ofelia.job-run.cleanup.container: 'sm-cleanup-job-container'
+
 volumes:
   mongo_data:
   minio_data:

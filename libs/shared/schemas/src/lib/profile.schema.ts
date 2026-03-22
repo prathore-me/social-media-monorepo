@@ -20,6 +20,12 @@ export class Profile extends Document {
 
   @Prop({ type: [String], default: [] })
   following: string[];
+
+  @Prop({ default: false })
+  deleted: boolean;
+
+  @Prop({ default: null })
+  deletedAt: Date | null;
 }
 
 export const ProfileSchema = SchemaFactory.createForClass(Profile);

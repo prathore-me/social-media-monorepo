@@ -36,6 +36,14 @@ export class Post extends Document {
 
   @Prop({ type: [Object], default: [] })
   comments: Comment[];
+
+  @Prop({ default: false })
+  deleted: boolean;
+
+  @Prop({ default: null })
+  deletedAt: Date | null;
 }
 
 export const PostSchema = SchemaFactory.createForClass(Post);
+
+PostSchema.index({ deleted: 1, deletedAt: 1 });

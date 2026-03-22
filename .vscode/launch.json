@@ -60,6 +60,21 @@
       "skipFiles": ["<node_internals>/**"],
       "sourceMaps": true,
       "outFiles": ["${workspaceFolder}/apps/media-api/dist/**/*.(m|c|)js", "!**/node_modules/**"]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug cleanup-job with Nx",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["nx", "serve", "cleanup-job"],
+      "env": {
+        "NODE_OPTIONS": "--inspect=9234"
+      },
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": ["<node_internals>/**"],
+      "sourceMaps": true,
+      "outFiles": ["${workspaceFolder}/apps/cleanup-job/dist/**/*.(m|c|)js", "!**/node_modules/**"]
     }
   ]
 }

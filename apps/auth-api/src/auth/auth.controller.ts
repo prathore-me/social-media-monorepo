@@ -1,10 +1,7 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Post, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { SignupDto } from '@social-media-monorepo/shared-dto';
-import { LoginDto } from '@social-media-monorepo/shared-dto';
-import { JwtAuthGuard } from '@social-media-monorepo/shared-auth-utils';
-import { CurrentUser } from '@social-media-monorepo/shared-auth-utils';
-import { UseGuards } from '@nestjs/common';
+import { SignupDto, LoginDto } from '@social-media-monorepo/shared-dto';
+import { JwtAuthGuard, CurrentUser } from '@social-media-monorepo/shared-auth-utils';
 
 @Controller('auth')
 export class AuthController {
@@ -24,5 +21,11 @@ export class AuthController {
   @Get('me')
   me(@CurrentUser() user: any) {
     return user;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete('account')
+  deleteAccount(@CurrentUser() user: any) {
+    return this.authService.deleteAccount(user.userId);
   }
 }

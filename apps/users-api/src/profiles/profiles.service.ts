@@ -20,13 +20,19 @@ export class ProfilesService {
   }
 
   async getByUsername(username: string): Promise<Profile> {
-    const profile = await this.profileModel.findOne({ username });
+    const profile = await this.profileModel.findOne({
+      username,
+      deleted: { $ne: true },
+    });
     if (!profile) throw new NotFoundException('Profile not found');
     return profile;
   }
 
   async getByUserId(userId: string): Promise<Profile> {
-    const profile = await this.profileModel.findOne({ userId });
+    const profile = await this.profileModel.findOne({
+      userId,
+      deleted: { $ne: true },
+    });
     if (!profile) throw new NotFoundException('Profile not found');
     return profile;
   }
@@ -34,12 +40,13 @@ export class ProfilesService {
   async search(query: string): Promise<Profile[]> {
     return this.profileModel.find({
       username: { $regex: query, $options: 'i' },
+      deleted: { $ne: true },
     }).limit(10);
   }
 
   async update(userId: string, dto: UpdateProfileDto): Promise<Profile> {
     const profile = await this.profileModel.findOneAndUpdate(
-      { userId },
+      { userId, deleted: { $ne: true } },
       { $set: dto },
       { new: true },
     );
@@ -47,10 +54,25 @@ export class ProfilesService {
     return profile;
   }
 
+  async softDelete(userId: string): Promise<{ message: string }> {
+    const profile = await this.profileModel.findOne({
+      userId,
+      deleted: { $ne: true },
+    });
+    if (!profile) throw new NotFoundException('Profile not found');
+
+    await this.profileModel.findOneAndUpdate(
+      { userId },
+      { deleted: true, deletedAt: new Date() },
+    );
+
+    return { message: 'Profile scheduled for deletion in 30 days' };
+  }
+
   async toggleFollow(targetUserId: string, currentUserId: string): Promise<{ following: boolean }> {
     const [targetProfile, currentProfile] = await Promise.all([
-      this.profileModel.findOne({ userId: targetUserId }),
-      this.profileModel.findOne({ userId: currentUserId }),
+      this.profileModel.findOne({ userId: targetUserId, deleted: { $ne: true } }),
+      this.profileModel.findOne({ userId: currentUserId, deleted: { $ne: true } }),
     ]);
 
     if (!targetProfile || !currentProfile) {
@@ -60,7 +82,6 @@ export class ProfilesService {
     const isFollowing = targetProfile.followers.includes(currentUserId);
 
     if (isFollowing) {
-      // Unfollow
       await Promise.all([
         this.profileModel.findOneAndUpdate(
           { userId: targetUserId },
@@ -73,7 +94,6 @@ export class ProfilesService {
       ]);
       return { following: false };
     } else {
-      // Follow
       await Promise.all([
         this.profileModel.findOneAndUpdate(
           { userId: targetUserId },
