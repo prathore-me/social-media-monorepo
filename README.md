@@ -83,6 +83,16 @@ apps/
 │   │   └── main.ts
 │   └── Dockerfile
 │
+├── cleanup-job/                       # Scheduled cleanup job - Kubernetes CronJob
+│   ├── src/
+│   │   ├── app/app.module.ts
+│   │   ├── cleanup/
+│   │   │   ├── cleanup.service.ts     # Permanently delete soft-deleted posts/users after 30 days
+│   │   │   └── cleanup.module.ts
+│   │   └── main.ts
+│   ├── Dockerfile
+│   └── webpack.config.js
+│
 └── web-app/                           # Port 5173 (dev) / 80 (prod) - React SPA
     ├── src/
     │   ├── main.tsx
@@ -142,6 +152,9 @@ users-api
 
 media-api
   └→ MinIO      (Object storage for images & videos)
+
+cleanup-job (Kubernetes CronJob - runs periodically)
+  └→ MongoDB    (Delete soft-deleted posts & users after 30 days)
 ```
 
 ---
@@ -332,6 +345,7 @@ npm run dev:docker:down  # Stop and remove volumes
 | Media API     | `http://localhost:3003/api` |
 | MinIO API     | `http://localhost:9000`     |
 | MinIO Console | `http://localhost:9001`     |
+| Cleanup Job   | Runs as Kubernetes CronJob  |
 
 ---
 
@@ -438,6 +452,14 @@ docker logs -f sm-media-api-container
 docker exec -it sm-mongodb-container mongosh
 ```
 
+**Monitoring cleanup-job in Kubernetes:**
+
+```bash
+kubectl logs -f deployment/cleanup-job -n social-media-monorepo  # Deployment logs
+kubectl get cronjob cleanup-job -n social-media-monorepo         # CronJob schedule
+kubectl get pods -n social-media-monorepo | grep cleanup-job     # Recent runs
+```
+
 Frontend: DevTools (F12) → Console + Network tabs.
 
 ---
@@ -452,6 +474,7 @@ Frontend: DevTools (F12) → Console + Network tabs.
 6. **Auth API → Users API** — `http://users-api:3000/api/profiles` (Docker network)
 7. **Media API → MinIO** — `http://minio:9000` (Docker network, S3 SDK)
 8. **All APIs → MongoDB** — `mongodb://mongodb:27017/social-media-monorepo-db`
+9. **Cleanup Job → MongoDB** — `mongodb://mongodb:27017/social-media-monorepo-db` (runs on schedule)
 
 ---
 
@@ -493,6 +516,7 @@ Frontend: DevTools (F12) → Console + Network tabs.
 | Profiles            | `apps/users-api/src/profiles/*`, `libs/shared/schemas/src/lib/profile.schema.ts` |
 | Posts               | `apps/posts-api/src/posts/*`, `libs/shared/schemas/src/lib/post.schema.ts`       |
 | Media Upload        | `apps/media-api/src/media/*`                                                     |
+| Data Cleanup        | `apps/cleanup-job/src/cleanup/*` — Scheduled cleanup of soft-deleted data        |
 | Frontend Pages      | `apps/web-app/src/pages/*`                                                       |
 | Frontend Components | `apps/web-app/src/components/{layout,post,profile,ui}/*`                         |
 | Frontend Hooks      | `apps/web-app/src/hooks/*`                                                       |
@@ -533,6 +557,7 @@ Frontend: DevTools (F12) → Console + Network tabs.
 - **Production web-app** uses Nginx + `entrypoint.sh` for runtime env var injection
 - **MongoDB** runs as `mongo:8.0` with persistent `mongo_data` volume
 - **MinIO** persists data in `minio_data` volume
+- **Cleanup Job** runs as Kubernetes CronJob (via `k8s/cleanup-job/cronjob.yaml`), permanently deletes soft-deleted posts & users older than 30 days
 
 ---
 
